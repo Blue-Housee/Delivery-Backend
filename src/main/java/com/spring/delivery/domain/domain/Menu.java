@@ -40,7 +40,6 @@ public class Menu extends Audit {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-
     @Builder
     public Menu(MenuRequestDto requestDto, Store store) {
         this.name = requestDto.getName();
