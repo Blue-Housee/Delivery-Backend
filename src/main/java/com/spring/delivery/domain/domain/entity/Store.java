@@ -40,4 +40,10 @@ public class Store extends BaseEntity {
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private List<StoreCategory> storeCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    private List<Menu> menus = new ArrayList<>();
 }

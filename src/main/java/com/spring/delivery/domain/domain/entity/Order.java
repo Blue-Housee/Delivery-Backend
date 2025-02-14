@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -29,5 +31,8 @@ public class Order extends BaseEntity {
 
     @OneToOne(mappedBy = "order")
     private Payment payment;
+
+    @OneToMany(mappedBy = "order")
+    private List<MenuOrder> menuOrderList = new ArrayList<>();
 
 }
