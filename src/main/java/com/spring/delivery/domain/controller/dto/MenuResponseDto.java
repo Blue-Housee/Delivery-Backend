@@ -1,6 +1,6 @@
-package com.spring.delivery.domain.dto;
+package com.spring.delivery.domain.controller.dto;
 
-import com.spring.delivery.domain.domain.Menu;
+import com.spring.delivery.domain.domain.entity.Menu;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,11 +19,11 @@ public class MenuResponseDto {
     private String description;
     private Boolean public_status;
     private String menu_image;
-    private Long storeId;
+    private UUID storeId;
     private LocalDateTime created_at;
     private String created_by;
 
-    @Builder
+
     public MenuResponseDto(Menu menu) {
         this.id = menu.getId();
         this.name = menu.getName();

@@ -42,14 +42,25 @@ public class Menu extends BaseEntity {
     @OneToMany(mappedBy = "menu")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    @Builder
-    public Menu(MenuRequestDto requestDto, Store store) {
-        this.name = requestDto.getName();
-        this.price = requestDto.getPrice();
-        this.description = requestDto.getDescription();
-        this.public_status = true;
-        this.menu_image = requestDto.getMenuImage();
+
+    private Menu(String name, Long price, String description, boolean public_status, String menu_image, Store store) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.public_status = public_status;
+        this.menu_image = menu_image;
         this.store = store;
+    }
+
+    public static Menu of(MenuRequestDto requestDto, Store store) {
+        return new Menu(
+                requestDto.getName(),
+                requestDto.getPrice(),
+                requestDto.getDescription(),
+                true,
+                requestDto.getMenuImage(),
+                store
+        );
     }
 
 }

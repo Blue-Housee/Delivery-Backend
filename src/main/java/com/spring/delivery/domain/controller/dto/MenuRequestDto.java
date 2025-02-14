@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @NoArgsConstructor
 public class MenuRequestDto {
@@ -25,10 +27,10 @@ public class MenuRequestDto {
     private Boolean publicStatus;
 
     // 가게 ID
-    private Long storeId;
+    private UUID storeId;
 
-    @Builder
-    public MenuRequestDto(String name, Long price, String description, String menuImage, Boolean publicStatus, Long storeId) {
+
+    public MenuRequestDto(String name, Long price, String description, String menuImage, Boolean publicStatus, UUID storeId) {
         this.name = name;
         this.price = price;
         this.description = description;
