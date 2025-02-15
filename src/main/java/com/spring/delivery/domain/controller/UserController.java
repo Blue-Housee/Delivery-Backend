@@ -1,10 +1,13 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
+import com.spring.delivery.domain.controller.dto.SignUpResponseDto;
 import com.spring.delivery.domain.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api")
@@ -19,13 +22,19 @@ public class UserController {
     }
 
     @PostMapping("/user/signUp") //회원가입
-    private ResponseEntity<String> signUp(@RequestBody SignUpRequestDto requestDto) {
+    private ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
 
-        userService.signup(requestDto);
-        return ResponseEntity.ok("회원가입 성공");
-
+        Long createdUserId = userService.signup(requestDto);
+        return ResponseEntity
+                .created(URI.create("/user/" + createdUserId))
+                .body(
+                        SignUpResponseDto
+                                .builder()
+                                .message("회원가입이 완료되었습니다.")
+                                .userId(createdUserId)
+                                .build()
+                );
     }
-
 
 
 }

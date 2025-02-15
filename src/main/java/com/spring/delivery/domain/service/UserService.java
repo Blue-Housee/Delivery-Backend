@@ -24,7 +24,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void signup(SignUpRequestDto requestDto) {
+    public Long signup(SignUpRequestDto requestDto) {
         String username = requestDto.getUsername();
         String password = passwordEncoder.encode(requestDto.getPassword());
 
@@ -54,5 +54,7 @@ public class UserService {
         // 사용자 등록
         User user = User.createUser(username, email, password, role);
         userRepository.save(user);
+
+        return user.getId();
     }
 }
