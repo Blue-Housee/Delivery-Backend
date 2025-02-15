@@ -1,12 +1,12 @@
 package com.spring.delivery.domain.controller;
 
-import com.spring.delivery.domain.controller.dto.SignInRequestDto;
-import com.spring.delivery.domain.controller.dto.SignInResponseDto;
-import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
-import com.spring.delivery.domain.controller.dto.SignUpResponseDto;
+import com.spring.delivery.domain.controller.dto.*;
+import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
+import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -39,20 +39,21 @@ public class UserController {
                 );
     }
 
-    @PostMapping("/user/signIn") //로그인
-    private ResponseEntity<SignInResponseDto> signIn(@RequestBody SignInRequestDto requestDto) {
-
-        String token = userService.signIn(requestDto);
-
+    @GetMapping("/user/{id}")
+    private ResponseEntity<UserResponseDto> getUser(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        User user = userService.getUser(id, userDetails);
         return ResponseEntity
                 .ok(
-                        SignInResponseDto
+                        UserResponseDto
                                 .builder()
-                                .message("로그인 성공!")
-                                .accessToken(token)
+                                .userId(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
                                 .build()
                 );
     }
-
 
 }

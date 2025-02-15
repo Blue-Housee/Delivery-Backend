@@ -1,13 +1,14 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.SignInRequestDto;
 import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;
+import com.spring.delivery.global.security.UserDetailsImpl;
 import com.spring.delivery.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,21 +59,23 @@ public class UserService {
         return user.getId();
     }
 
-    public String signIn(SignInRequestDto requestDto) {
-        String email = requestDto.getEmail();
-        String password = requestDto.getPassword();
+    public User getUser(Long id, UserDetailsImpl userDetails) {
 
-        // 사용자 확인
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new IllegalArgumentException("등록된 사용자가 없습니다.")
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
         );
 
-        // 비밀번호 확인
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        String currentUsername = userDetails.getUsername();
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        // 자기 자신 or MANAGER, MASTER 만 접근 가능
+        if (user.getUsername().equals(currentUsername) ||
+                currentUserRole == Role.MANAGER ||
+                currentUserRole == Role.MASTER
+        ) {
+            return user;
         }
 
-        // JWT 생성 및 반환
-        return jwtUtil.createToken(user.getUsername(), user.getRole());
+        throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
     }
 }
