@@ -1,9 +1,12 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.controller.dto.SignInRequestDto;
 import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;
+import com.spring.delivery.global.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,18 +14,15 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Value("${admin.token}")
     private String ADMIN_TOKEN;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public Long signup(SignUpRequestDto requestDto) {
         String username = requestDto.getUsername();
@@ -56,5 +56,23 @@ public class UserService {
         userRepository.save(user);
 
         return user.getId();
+    }
+
+    public String signIn(SignInRequestDto requestDto) {
+        String email = requestDto.getEmail();
+        String password = requestDto.getPassword();
+
+        // 사용자 확인
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new IllegalArgumentException("등록된 사용자가 없습니다.")
+        );
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // JWT 생성 및 반환
+        return jwtUtil.createToken(user.getUsername(), user.getRole());
     }
 }

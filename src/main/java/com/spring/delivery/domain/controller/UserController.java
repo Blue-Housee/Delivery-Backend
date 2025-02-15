@@ -1,5 +1,7 @@
 package com.spring.delivery.domain.controller;
 
+import com.spring.delivery.domain.controller.dto.SignInRequestDto;
+import com.spring.delivery.domain.controller.dto.SignInResponseDto;
 import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
 import com.spring.delivery.domain.controller.dto.SignUpResponseDto;
 import com.spring.delivery.domain.service.UserService;
@@ -25,6 +27,7 @@ public class UserController {
     private ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
 
         Long createdUserId = userService.signup(requestDto);
+
         return ResponseEntity
                 .created(URI.create("/user/" + createdUserId))
                 .body(
@@ -32,6 +35,21 @@ public class UserController {
                                 .builder()
                                 .message("회원가입이 완료되었습니다.")
                                 .userId(createdUserId)
+                                .build()
+                );
+    }
+
+    @PostMapping("/user/signIn") //로그인
+    private ResponseEntity<SignInResponseDto> signIn(@RequestBody SignInRequestDto requestDto) {
+
+        String token = userService.signIn(requestDto);
+
+        return ResponseEntity
+                .ok(
+                        SignInResponseDto
+                                .builder()
+                                .message("로그인 성공!")
+                                .accessToken(token)
                                 .build()
                 );
     }
