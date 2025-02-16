@@ -1,10 +1,7 @@
 package com.spring.delivery.domain.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -21,7 +18,7 @@ public class Review extends BaseEntity{
 
     private String contents;
 
-    private int score;
+    private Double score;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -35,5 +32,12 @@ public class Review extends BaseEntity{
     @JoinColumn(name = "order_id")
     private Order order;
 
-
+    @Builder
+    public Review (String contents, Double score, User user, Store store, Order order) {
+        this.contents = contents;
+        this.score = score;
+        this.user = user;
+        this.store = store;
+        this.order = order;
+    }
 }
