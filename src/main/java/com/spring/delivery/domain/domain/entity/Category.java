@@ -14,7 +14,6 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "p_category")
 public class Category extends BaseEntity {
     @Id
@@ -25,4 +24,14 @@ public class Category extends BaseEntity {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<StoreCategory> StoryCategories = new ArrayList<>();
+
+    // 프라이빗 생성자
+    private Category(String name) {
+        this.name = name;
+    }
+
+    // 정적 팩토리 메서드
+    public static Category of(String name) {
+        return new Category(name);
+    }
 }
