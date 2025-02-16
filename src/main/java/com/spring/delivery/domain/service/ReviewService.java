@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.controller.dto.ReviewDetailsResponseDto;
 import com.spring.delivery.domain.controller.dto.ReviewRequestDto;
 import com.spring.delivery.domain.controller.dto.ReviewResponseDto;
 import com.spring.delivery.domain.domain.entity.Order;
@@ -10,12 +11,9 @@ import com.spring.delivery.domain.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,17 +40,31 @@ public class ReviewService {
                         .user(user)
                         .build());
 
-        return new ReviewResponseDto(review.getId(), review.getScore(),
-                review.getContents(), review.getCreatedAt());
+        return ReviewResponseDto.builder()
+                .id(review.getId())
+                .rating(review.getScore())
+                .comment(review.getContents())
+                .created_at(review.getCreatedAt())
+                .build();
     }
 
-    public ReviewResponseDto getReviewDetails(UUID reviewId)  {
+    public ReviewDetailsResponseDto getReviewDetails(UUID reviewId)  {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(
                 () -> new IllegalArgumentException("해당되는 리뷰가 없습니다.")
         );
 
-        return new ReviewResponseDto(review.getId(), review.getScore(), review.getContents(), review.getCreatedAt());
+        return ReviewDetailsResponseDto.builder()
+                .id(review.getId())
+                .rating(review.getScore())
+                .comment(review.getContents())
+                .customer_uuid(review.getUser().getId())
+                .store_id(review.getStore().getId())
+                .customer_id(review.getUser().getUsername())
+                .created_at(review.getCreatedAt())
+                .updated_at(review.getUpdatedAt())
+                .deleted_at(review.getDeletedAt())
+                .build();
     }
 
     public List<ReviewResponseDto> getStoreReview(UUID storeId) {
@@ -64,8 +76,12 @@ public class ReviewService {
         List<Review> storeReview = reviewRepository.findByStore_Id(storeId);
 
         return storeReview.stream().map((review) ->
-                new ReviewResponseDto(review.getId(), review.getScore()
-                ,review.getContents(),review.getCreatedAt())
+                 ReviewResponseDto.builder()
+                         .id(review.getId())
+                         .rating(review.getScore())
+                         .comment(review.getContents())
+                         .created_at(review.getCreatedAt())
+                         .build()
         ).collect(Collectors.toList());
     }
 }
