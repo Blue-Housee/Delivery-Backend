@@ -3,6 +3,7 @@ package com.spring.delivery.domain.service;
 import com.spring.delivery.domain.controller.dto.ReviewDetailsResponseDto;
 import com.spring.delivery.domain.controller.dto.ReviewRequestDto;
 import com.spring.delivery.domain.controller.dto.ReviewResponseDto;
+import com.spring.delivery.domain.controller.dto.ReviewStoreResponseDto;
 import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.domain.entity.Review;
 import com.spring.delivery.domain.domain.entity.Store;
@@ -11,6 +12,9 @@ import com.spring.delivery.domain.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +27,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
+    //리뷰 생성 기능 (수정 필요)
     public ReviewResponseDto createReview(UUID storeId, ReviewRequestDto dto, User user) {
 
         //storeid, orderid를 존재하는지 확인 필요
@@ -48,6 +53,7 @@ public class ReviewService {
                 .build();
     }
 
+    //리뷰 단건 검색 기능
     public ReviewDetailsResponseDto getReviewDetails(UUID reviewId)  {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(
@@ -67,21 +73,40 @@ public class ReviewService {
                 .build();
     }
 
-    public List<ReviewResponseDto> getStoreReview(UUID storeId) {
+    //상점의 리뷰들 전체 검색 기능(수정 필요)
+    public ReviewStoreResponseDto getStoreReview(UUID storeId, int page, int size) {
 
         /*
         store에 대한 에러 핸들링 추가
         */
+        //상의 후 sort 추가
+        Pageable pageable = PageRequest.of(page, size);
 
-        List<Review> storeReview = reviewRepository.findByStore_Id(storeId);
+        Page<Review> storeReview = reviewRepository.findByStore_Id(storeId, pageable);
 
-        return storeReview.stream().map((review) ->
-                 ReviewResponseDto.builder()
-                         .id(review.getId())
-                         .rating(review.getScore())
-                         .comment(review.getContents())
-                         .created_at(review.getCreatedAt())
-                         .build()
-        ).collect(Collectors.toList());
+
+        return ReviewStoreResponseDto.builder()
+                //페이지네이션 정보
+                .page(storeReview.getNumber())
+                .size(storeReview.getSize())
+                .total(storeReview.getTotalPages())
+
+                //상점의 리뷰들
+                .reviews(
+                        storeReview.stream()
+                                .map(review -> ReviewResponseDto.builder()
+                                        .id(review.getId())
+                                        .rating(review.getScore())
+                                        .comment(review.getContents())
+                                        .created_at(review.getCreatedAt())
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                )
+                .build();
+
+
+
     }
+
 }
