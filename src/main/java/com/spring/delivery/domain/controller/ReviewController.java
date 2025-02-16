@@ -6,6 +6,7 @@ import com.spring.delivery.domain.controller.dto.ReviewResponseDto;
 import com.spring.delivery.domain.service.ReviewService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,14 @@ public class ReviewController {
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
+    }
+    @GetMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponseDto> getReviewDetails(@PathVariable UUID reviewId){
+        return ResponseEntity.ok(
+                ApiResponseDto.success(
+                        reviewService.getReviewDetails(reviewId)
+                )
+        );
     }
 
     @PostMapping("/stores/{storeId}/reviews")
