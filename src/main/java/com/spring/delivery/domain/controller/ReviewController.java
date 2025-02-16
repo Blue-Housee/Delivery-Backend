@@ -2,9 +2,9 @@ package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.ReviewRequestDto;
+import com.spring.delivery.domain.controller.dto.ReviewUpdateRequestDto;
 import com.spring.delivery.domain.service.ReviewService;
 import com.spring.delivery.global.security.UserDetailsImpl;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -59,5 +59,15 @@ public class ReviewController {
         );
     }
 
-
+    @PutMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponseDto> updateReview (@PathVariable UUID reviewId,
+                                                        @RequestBody ReviewUpdateRequestDto dto,
+                                                        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        return ResponseEntity.ok(
+                ApiResponseDto.success(
+                        reviewService.updateReview(reviewId, dto, userDetails)
+                )
+        );
+    }
 }
