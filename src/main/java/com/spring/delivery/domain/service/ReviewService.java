@@ -13,8 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +53,19 @@ public class ReviewService {
         );
 
         return new ReviewResponseDto(review.getId(), review.getScore(), review.getContents(), review.getCreatedAt());
+    }
+
+    public List<ReviewResponseDto> getStoreReview(UUID storeId) {
+
+        /*
+        store에 대한 에러 핸들링 추가
+        */
+
+        List<Review> storeReview = reviewRepository.findByStore_Id(storeId);
+
+        return storeReview.stream().map((review) ->
+                new ReviewResponseDto(review.getId(), review.getScore()
+                ,review.getContents(),review.getCreatedAt())
+        ).collect(Collectors.toList());
     }
 }

@@ -32,6 +32,15 @@ public class ReviewController {
         );
     }
 
+    @GetMapping("/stores/{storeId}/reviews")
+    public ResponseEntity<ApiResponseDto> getStoreReview(@PathVariable UUID storeId){
+        return ResponseEntity.ok(
+                ApiResponseDto.success(
+                        reviewService.getStoreReview(storeId)
+                )
+        );
+    }
+
     @PostMapping("/stores/{storeId}/reviews")
     public ResponseEntity<ApiResponseDto> createReview (@PathVariable UUID storeId,
                                                         @RequestBody ReviewRequestDto dto,
