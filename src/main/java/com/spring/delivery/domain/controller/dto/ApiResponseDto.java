@@ -9,21 +9,19 @@ public class ApiResponseDto <T>{
     private int status;
     private String message;
     private T data;
-    private T error;
 
-    public ApiResponseDto(int status,String message, T data,T error) {
+    public ApiResponseDto(int status,String message, T data) {
         this.status = status;
         this.message = message;
         this.data = data;
-        this.error=error;
     }
 
     public static <T> ApiResponseDto<T> success(T data) {
-        return new ApiResponseDto<>(200, SUCCESS_MESSAGE, data,null);  // default status 200
+        return new ApiResponseDto<>(200, SUCCESS_MESSAGE, data);  // default status 200
     }
 
-    public static <T> ApiResponseDto<T> fail(int status, String message,T errors) {
-        return new ApiResponseDto<>(status, message, null, errors);  // default status 200
+    public static <T> ApiResponseDto<T> fail(int status, String message) {
+        return new ApiResponseDto<>(status, message, null);  // default status 200
     }
 
 }
