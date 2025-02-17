@@ -139,4 +139,33 @@ public class UserService {
         log.info(user.toString());
         return user;
     }
+
+    @Transactional
+    public User deleteUser(Long id, UserDetailsImpl userDetails) {
+        // 유저 존재 여부 확인
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
+        );
+
+        //권한 확인
+        // 자기 자신 or MASTER 만 접근 가능
+        String currentUsername = userDetails.getUsername();
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        if (!(user.getUsername().equals(currentUsername) ||
+                currentUserRole == Role.MASTER)
+        ) {
+            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+        }
+
+        //이미 삭제된 유저 확인
+        if(user.getDeletedAt() != null && StringUtils.hasText(String.valueOf(user.getDeletedAt()))){
+            throw new IllegalArgumentException("이미 삭제된 유저입니다.");
+        }
+
+        //삭제
+        user.delete(currentUsername); // 삭제한 사람: 로그인한 사용자
+
+        return user;
+    }
 }

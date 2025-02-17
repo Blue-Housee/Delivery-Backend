@@ -1,10 +1,7 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
-import com.spring.delivery.domain.controller.dto.user.SignUpResponseDto;
-import com.spring.delivery.domain.controller.dto.user.UserResponseDto;
-import com.spring.delivery.domain.controller.dto.user.UserUpdateRequestDto;
+import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
@@ -78,6 +75,23 @@ public class UserController {
                                         .userId(user.getId())
                                         .username(user.getUsername())
                                         .email(user.getEmail())
+                                        .build()
+                        )
+                );
+    }
+
+    @DeleteMapping("/user/{id}")
+    private ResponseEntity<ApiResponseDto> deleteUser(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        User user = userService.deleteUser(id, userDetails);
+        return ResponseEntity
+                .ok(
+                        ApiResponseDto.success(
+                                UserDeleteResponseDto
+                                        .builder()
+                                        .userId(user.getId())
                                         .build()
                         )
                 );
