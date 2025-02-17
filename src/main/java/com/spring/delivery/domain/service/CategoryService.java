@@ -28,7 +28,7 @@ public class CategoryService {
         }
 
         // 카테고리 생성
-        Category category = requestDto.toEntity();
+        Category category = Category.of(requestDto.getName());
         categoryRepository.save(category);
 
         // 성공 응답 반환
