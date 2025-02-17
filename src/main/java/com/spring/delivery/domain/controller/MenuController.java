@@ -71,8 +71,7 @@ public class MenuController {
     // 메뉴 단건(상세) 조회
     @GetMapping("/{menuId}")
     public ResponseEntity<ApiResponseDto<MenuResponseDto>> getMenuDetail(
-            @PathVariable UUID menuId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @PathVariable UUID menuId
     ) {
 
         ApiResponseDto<MenuResponseDto> responseDto = menuService.getMenuDetail(menuId);

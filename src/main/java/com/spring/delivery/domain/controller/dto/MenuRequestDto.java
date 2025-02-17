@@ -1,6 +1,6 @@
 package com.spring.delivery.domain.controller.dto;
 
-import lombok.Builder;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
