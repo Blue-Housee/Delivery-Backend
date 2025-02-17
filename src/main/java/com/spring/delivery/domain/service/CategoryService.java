@@ -20,7 +20,7 @@ public class CategoryService {
     public ApiResponseDto<UUID> createCategory(CategoryRequestDto requestDto) {
         // 중복 체크
         if (categoryRepository.findByName(requestDto.getName()).isPresent()) {
-            return ApiResponseDto.fail(400, "카테고리가 이미 존재합니다.", null);
+            return ApiResponseDto.fail(400, "카테고리가 이미 존재합니다.");
         }
 
         // 카테고리 생성
