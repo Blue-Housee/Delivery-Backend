@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.repository;
+package com.spring.delivery.domain.domain.repository;
 
 import com.spring.delivery.domain.domain.entity.Menu;
 import org.springframework.data.domain.Page;
