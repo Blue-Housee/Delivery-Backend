@@ -1,13 +1,15 @@
 package com.spring.delivery.domain.controller;
 
-import com.spring.delivery.domain.controller.dto.*;
+import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.category.CategoryDeleteResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryListResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryRequestDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryUpdateResponseDto;
 import com.spring.delivery.domain.service.CategoryService;
+import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,30 +25,35 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponseDto> createCategory(@RequestBody CategoryRequestDto requestDto) {
-        ApiResponseDto responseDto = categoryService.createCategory(requestDto);
+    public ResponseEntity<ApiResponseDto> createCategory(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody CategoryRequestDto requestDto) {
+        ApiResponseDto responseDto = categoryService.createCategory(userDetails, requestDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponseDto<Page<CategoryListResponseDto>>> getAllCategories(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
             @RequestParam(value = "sortBy") String sortBy,
             @RequestParam(value = "isAsc") boolean isAsc) {
+        ApiResponseDto<Page<CategoryListResponseDto>> responseDto = categoryService.getAllCategories(userDetails, page - 1, size, sortBy, isAsc);
 
-        Page<CategoryListResponseDto> categoryResponseDto = categoryService.getAllCategories(page - 1, size, sortBy, isAsc);
-        return ResponseEntity.ok(ApiResponseDto.success(categoryResponseDto));
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponseDto<CategoryUpdateResponseDto>> updateCategory(
-            @PathVariable UUID id,
-            @RequestBody CategoryRequestDto requestDto) {
+    public ResponseEntity<ApiResponseDto<CategoryUpdateResponseDto>> updateCategory(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody CategoryRequestDto requestDto) {
+        ApiResponseDto<CategoryUpdateResponseDto> response = categoryService.updateCategory(userDetails, id, requestDto);
 
-        ApiResponseDto<CategoryUpdateResponseDto> response = categoryService.updateCategory(id, requestDto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<CategoryDeleteResponseDto>> deleteCategory(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id) {
+        ApiResponseDto<CategoryDeleteResponseDto> response = categoryService.deleteCategory(userDetails, id);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 }
