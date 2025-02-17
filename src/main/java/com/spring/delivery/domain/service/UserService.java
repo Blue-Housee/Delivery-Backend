@@ -1,6 +1,6 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.SignUpRequestDto;
+import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;

@@ -1,6 +1,9 @@
 package com.spring.delivery.domain.controller;
 
-import com.spring.delivery.domain.controller.dto.*;
+import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
+import com.spring.delivery.domain.controller.dto.user.SignUpResponseDto;
+import com.spring.delivery.domain.controller.dto.user.UserResponseDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
@@ -24,35 +27,38 @@ public class UserController {
     }
 
     @PostMapping("/user/signUp") //회원가입
-    private ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
+    private ResponseEntity<ApiResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
 
         Long createdUserId = userService.signup(requestDto);
 
         return ResponseEntity
                 .created(URI.create("/user/" + createdUserId))
                 .body(
-                        SignUpResponseDto
-                                .builder()
-                                .message("회원가입이 완료되었습니다.")
-                                .userId(createdUserId)
-                                .build()
+                        ApiResponseDto.success(
+                                SignUpResponseDto
+                                        .builder()
+                                        .userId(createdUserId)
+                                        .build()
+                        )
                 );
     }
 
     @GetMapping("/user/{id}")
-    private ResponseEntity<UserResponseDto> getUser(
+    private ResponseEntity<ApiResponseDto> getUser(
             @PathVariable("id") Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         User user = userService.getUser(id, userDetails);
         return ResponseEntity
                 .ok(
-                        UserResponseDto
-                                .builder()
-                                .userId(user.getId())
-                                .username(user.getUsername())
-                                .email(user.getEmail())
-                                .build()
+                        ApiResponseDto.success(
+                                UserResponseDto
+                                        .builder()
+                                        .userId(user.getId())
+                                        .username(user.getUsername())
+                                        .email(user.getEmail())
+                                        .build()
+                        )
                 );
     }
 

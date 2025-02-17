@@ -1,8 +1,7 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.user;
 
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 public class SignUpRequestDto {
