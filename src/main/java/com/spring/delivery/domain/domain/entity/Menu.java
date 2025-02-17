@@ -2,7 +2,9 @@ package com.spring.delivery.domain.domain.entity;
 
 import com.spring.delivery.domain.controller.dto.MenuRequestDto;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
@@ -11,7 +13,6 @@ import java.util.UUID;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 @Table(name = "p_menu")
 public class Menu extends BaseEntity {
@@ -42,14 +43,39 @@ public class Menu extends BaseEntity {
     @OneToMany(mappedBy = "menu")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    @Builder
-    public Menu(MenuRequestDto requestDto, Store store) {
-        this.name = requestDto.getName();
-        this.price = requestDto.getPrice();
-        this.description = requestDto.getDescription();
-        this.public_status = true;
-        this.menu_image = requestDto.getMenuImage();
+
+    private Menu(String name, Long price, String description, boolean public_status, String menu_image, Store store) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.public_status = public_status;
+        this.menu_image = menu_image;
         this.store = store;
     }
+
+    public static Menu of(MenuRequestDto requestDto, Store store) {
+        return new Menu(
+                requestDto.getName(),
+                requestDto.getPrice(),
+                requestDto.getDescription(),
+                requestDto.getPublicStatus(),
+                requestDto.getMenuImage(),
+                store
+        );
+    }
+
+    public static void update(Menu menu, MenuRequestDto requestDto) {
+        if (requestDto.getName() != null) menu.name = requestDto.getName();
+        if (requestDto.getPrice() != null) menu.price = requestDto.getPrice();
+        if (requestDto.getDescription() != null) menu.description = requestDto.getDescription();
+        if (requestDto.getPublicStatus() != null) menu.public_status = requestDto.getPublicStatus();
+        if (requestDto.getMenuImage() != null) menu.menu_image = requestDto.getMenuImage();
+    }
+
+    public void delete(String deletedBy) {
+        super.delete(deletedBy);
+        this.public_status = false;
+    }
+
 
 }
