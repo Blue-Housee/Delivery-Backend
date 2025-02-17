@@ -1,15 +1,14 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.ReviewDetailsResponseDto;
-import com.spring.delivery.domain.controller.dto.ReviewRequestDto;
-import com.spring.delivery.domain.controller.dto.ReviewResponseDto;
-import com.spring.delivery.domain.controller.dto.ReviewStoreResponseDto;
+import com.spring.delivery.domain.controller.dto.*;
 import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.domain.entity.Review;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.repository.ReviewRepository;
 
+import com.spring.delivery.global.security.UserDetailsImpl;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -84,13 +82,11 @@ public class ReviewService {
 
         Page<Review> storeReview = reviewRepository.findByStore_Id(storeId, pageable);
 
-
         return ReviewStoreResponseDto.builder()
                 //페이지네이션 정보
                 .page(storeReview.getNumber())
                 .size(storeReview.getSize())
                 .total(storeReview.getTotalPages())
-
                 //상점의 리뷰들
                 .reviews(
                         storeReview.stream()
@@ -104,9 +100,28 @@ public class ReviewService {
                                 .collect(Collectors.toList())
                 )
                 .build();
-
-
-
     }
 
+    @Transactional
+    public ReviewResponseDto updateReview(UUID reviewId, ReviewUpdateRequestDto dto, UserDetailsImpl userDetails) {
+
+        //리뷰 아이디랑 계정이 일치하는지 확인
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다"));
+
+        //다른 유저면 에러
+        if(!review.getUser().getId().equals(userDetails.getUser().getId())){
+            throw new IllegalArgumentException("계정 정보가 다릅니다.");
+        }
+
+        review.update(dto.getRating(), dto.getComment());
+
+        //일치하다면 변경 수행 일치하는것만 하는게 좋음
+        return ReviewResponseDto.builder()
+                .id(review.getId())
+                .rating(review.getScore())
+                .comment(review.getContents())
+                .created_at(review.getCreatedAt())
+                .build();
+    }
 }
