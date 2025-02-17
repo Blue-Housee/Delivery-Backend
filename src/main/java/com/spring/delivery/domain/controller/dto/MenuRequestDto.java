@@ -1,7 +1,5 @@
 package com.spring.delivery.domain.controller.dto;
 
-import com.spring.delivery.domain.domain.entity.Menu;
-import com.spring.delivery.domain.domain.entity.Store;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,14 +28,5 @@ public class MenuRequestDto {
     // 가게 ID
     private UUID storeId;
 
-    @Builder
-    private MenuRequestDto(String name, Long price, String description, String menuImage, Boolean publicStatus, UUID storeId) {
-        this.name = name;
-        this.price = price;
-        this.description = description;
-        this.menuImage = menuImage;
-        this.publicStatus = publicStatus;
-        this.storeId = storeId;
-    }
 
 }
