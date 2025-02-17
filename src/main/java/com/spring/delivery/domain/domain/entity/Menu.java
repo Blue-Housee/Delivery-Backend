@@ -53,7 +53,7 @@ public class Menu extends BaseEntity {
         this.store = store;
     }
 
-    public static Menu create(MenuRequestDto requestDto, Store store) {
+    public static Menu of(MenuRequestDto requestDto, Store store) {
         return new Menu(
                 requestDto.getName(),
                 requestDto.getPrice(),

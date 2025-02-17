@@ -40,9 +40,4 @@ public class MenuRequestDto {
         this.storeId = storeId;
     }
 
-    public static Menu from(MenuRequestDto requestDto, Store store) {
-        return Menu.create(requestDto, store);
-    }
-
-
 }

@@ -49,7 +49,7 @@ public class MenuService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게 입니다."));
 
         // 메뉴 생성
-        Menu menu = MenuRequestDto.from(requestDto, store);
+        Menu menu = Menu.of(requestDto, store);
         menuRepository.save(menu);
 
         return ApiResponseDto.success(MenuResponseDto.from(menu));
