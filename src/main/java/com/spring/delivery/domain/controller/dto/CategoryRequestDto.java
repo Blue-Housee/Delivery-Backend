@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class CategoryRequestDto {
-
     private String name;
 
     // Category 엔티티로 변환하는 메서드
