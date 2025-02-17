@@ -1,19 +1,24 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
+import com.spring.delivery.domain.controller.dto.user.UserUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import com.spring.delivery.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,7 +30,7 @@ public class UserService {
     @Value("${admin.token}")
     private String ADMIN_TOKEN;
 
-    public Long signup(SignUpRequestDto requestDto) {
+    public User signup(SignUpRequestDto requestDto) {
         String username = requestDto.getUsername();
         String password = passwordEncoder.encode(requestDto.getPassword());
 
@@ -56,7 +61,7 @@ public class UserService {
         User user = User.createUser(username, email, password, role);
         userRepository.save(user);
 
-        return user.getId();
+        return user;
     }
 
     public User getUser(Long id, UserDetailsImpl userDetails) {
@@ -77,5 +82,61 @@ public class UserService {
         }
 
         throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+    }
+
+    @Transactional
+    public User updateUser(Long id, UserUpdateRequestDto requestDto, UserDetailsImpl userDetails) {
+
+        log.info(requestDto.toString());
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
+        );
+
+        String currentUsername = userDetails.getUsername();
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        // 자기 자신 or MANAGER, MASTER 만 접근 가능
+        if (!(user.getUsername().equals(currentUsername) ||
+                currentUserRole == Role.MANAGER ||
+                currentUserRole == Role.MASTER)
+        ) {
+            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+        }
+
+        //TODO: username 변경 시, Jwt 를 새로 발급해 주던지, 로그아웃 시키고, 로그인하도록 해야함. => 지금은 client가 없으므로, Jwt를 새로 발급해줘야 할 듯.
+
+        // username, email 중복 확인
+        if (StringUtils.hasText(requestDto.getUsername()) && !user.getUsername().equals(requestDto.getUsername())) {
+            Optional<User> userFindByUsername = userRepository.findByUsername(requestDto.getUsername());
+            if (userFindByUsername.isPresent()) {
+                throw new IllegalArgumentException("이미 존재하는 username입니다.");
+            }
+        }
+
+        if (StringUtils.hasText(requestDto.getEmail()) && !user.getEmail().equals(requestDto.getEmail())) {
+            Optional<User> userFindByEmail = userRepository.findByEmail(requestDto.getEmail());
+            if (userFindByEmail.isPresent()) {
+                throw new IllegalArgumentException("이미 존재하는 email입니다.");
+            }
+        }
+
+        String newPassword = null;
+        // newPassword 가 있으면 originPassword 확인
+        if (StringUtils.hasText(requestDto.getNewPassword())) {
+            if (!passwordEncoder.matches(requestDto.getOriginPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            }
+            newPassword = passwordEncoder.encode(requestDto.getNewPassword());
+        }
+
+        // 유저 정보 업데이트
+        user.updateUser(
+                requestDto.getUsername(),
+                requestDto.getEmail(),
+                newPassword
+        );
+
+        log.info(user.toString());
+        return user;
     }
 }

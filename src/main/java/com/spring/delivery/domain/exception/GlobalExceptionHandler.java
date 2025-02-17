@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponseDto> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                ApiResponseDto.fail(400, "잘못된 요청입니다.")
+                ApiResponseDto.fail(400, e.getMessage())
         );
     }
 
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponseDto> handleAccessDeniedException(AccessDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                ApiResponseDto.fail(403, "접근 권한이 없습니다.")
+                ApiResponseDto.fail(403, e.getMessage())
         );
     }
 
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDto> handleGeneralException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                ApiResponseDto.fail(500, "서버 오류 발생")
+                ApiResponseDto.fail(500, e.getMessage())
         );
     }
 }

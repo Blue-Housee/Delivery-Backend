@@ -4,6 +4,7 @@ import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
 import com.spring.delivery.domain.controller.dto.user.SignUpResponseDto;
 import com.spring.delivery.domain.controller.dto.user.UserResponseDto;
+import com.spring.delivery.domain.controller.dto.user.UserUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
@@ -29,15 +30,15 @@ public class UserController {
     @PostMapping("/user/signUp") //회원가입
     private ResponseEntity<ApiResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
 
-        Long createdUserId = userService.signup(requestDto);
+        User createdUser = userService.signup(requestDto);
 
         return ResponseEntity
-                .created(URI.create("/user/" + createdUserId))
+                .created(URI.create("/user/" + createdUser.getId()))
                 .body(
                         ApiResponseDto.success(
                                 SignUpResponseDto
                                         .builder()
-                                        .userId(createdUserId)
+                                        .userId(createdUser.getId())
                                         .build()
                         )
                 );
@@ -49,6 +50,26 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         User user = userService.getUser(id, userDetails);
+        return ResponseEntity
+                .ok(
+                        ApiResponseDto.success(
+                                UserResponseDto
+                                        .builder()
+                                        .userId(user.getId())
+                                        .username(user.getUsername())
+                                        .email(user.getEmail())
+                                        .build()
+                        )
+                );
+    }
+
+    @PatchMapping("/user/{id}")
+    private ResponseEntity<ApiResponseDto> updateUser(
+            @PathVariable("id") Long id,
+            @RequestBody UserUpdateRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        User user = userService.updateUser(id, requestDto, userDetails);
         return ResponseEntity
                 .ok(
                         ApiResponseDto.success(
