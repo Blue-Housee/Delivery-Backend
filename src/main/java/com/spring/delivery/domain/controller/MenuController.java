@@ -75,7 +75,7 @@ public class MenuController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
 
-        ApiResponseDto<MenuResponseDto> responseDto = menuService.getMenuDetail(menuId, userDetails);
+        ApiResponseDto<MenuResponseDto> responseDto = menuService.getMenuDetail(menuId);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }

@@ -107,7 +107,7 @@ public class MenuService {
 
     // 메뉴 단건 조회
     @Transactional(readOnly = true)
-    public ApiResponseDto<MenuResponseDto> getMenuDetail(UUID menuId, UserDetailsImpl userDetails) {
+    public ApiResponseDto<MenuResponseDto> getMenuDetail(UUID menuId) {
 
         try {
             Menu menu = menuRepository.findActiveMenuById(menuId)
