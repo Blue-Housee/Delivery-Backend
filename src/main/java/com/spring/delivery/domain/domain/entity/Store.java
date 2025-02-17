@@ -15,7 +15,6 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "p_store")
 public class Store extends BaseEntity {
     @Id
@@ -35,7 +34,7 @@ public class Store extends BaseEntity {
     private LocalDateTime end_time;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // 유저 ID를 참조하는 외래 키 컬럼
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
@@ -46,4 +45,22 @@ public class Store extends BaseEntity {
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private List<Menu> menus = new ArrayList<>();
+
+    // 프라이빗 생성자
+    private Store(String name, String address, String tel, boolean openStatus,
+                  LocalDateTime startTime, LocalDateTime endTime, User user) {
+        this.name = name;
+        this.address = address;
+        this.tel = tel;
+        this.open_status = openStatus;
+        this.start_time = startTime;
+        this.end_time = endTime;
+        this.user = user;
+    }
+
+    // 정적 팩토리 메서드
+    public static Store of(String name, String address, String tel, boolean openStatus,
+                           LocalDateTime startTime, LocalDateTime endTime, User user) {
+        return new Store(name, address, tel, openStatus, startTime, endTime, user);
+    }
 }
