@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.category;
 
 import lombok.Getter;
 import java.time.LocalDateTime;

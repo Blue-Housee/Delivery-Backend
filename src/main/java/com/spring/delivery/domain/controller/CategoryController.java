@@ -1,11 +1,16 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.*;
+import com.spring.delivery.domain.controller.dto.category.CategoryListResponseDto;
+import com.spring.delivery.domain.controller.dto.category.CategoryRequestDto;
+import com.spring.delivery.domain.controller.dto.category.CategoryUpdateResponseDto;
 import com.spring.delivery.domain.service.CategoryService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -33,6 +38,15 @@ public class CategoryController {
 
         Page<CategoryListResponseDto> categoryResponseDto = categoryService.getAllCategories(page - 1, size, sortBy, isAsc);
         return ResponseEntity.ok(ApiResponseDto.success(categoryResponseDto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<CategoryUpdateResponseDto>> updateCategory(
+            @PathVariable UUID id,
+            @RequestBody CategoryRequestDto requestDto) {
+
+        ApiResponseDto<CategoryUpdateResponseDto> response = categoryService.updateCategory(id, requestDto);
+        return ResponseEntity.ok(response);
     }
 
 }
