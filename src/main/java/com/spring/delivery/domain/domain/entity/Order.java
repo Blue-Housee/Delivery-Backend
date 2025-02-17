@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.domain.entity;
 
+import com.spring.delivery.domain.controller.dto.OrderRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,9 @@ public class Order extends BaseEntity {
 
     private String order_status;
 
-    private int total_price;
+    private String order_type;
+
+    private Long total_price;
 
     @OneToOne(mappedBy = "order")
     private Payment payment;
@@ -35,4 +38,20 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
+    private Order(User user, String order_status, Long total_price, Payment payment) {
+        this.user = user;
+        this.order_status = order_status;
+        this.total_price = total_price;
+        this.payment = payment;
+
+    }
+
+    public static Order createOrder(OrderRequestDto orderRequestDto) {
+        return new Order(
+                orderRequestDto.getUserId(),
+                orderRequestDto.getOrderType(),
+                orderRequestDto.getTotalPrice(),
+                orderRequestDto.getPaymentId()
+        );
+    }
 }
