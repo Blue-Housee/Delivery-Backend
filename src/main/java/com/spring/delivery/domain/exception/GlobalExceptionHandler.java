@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.exception;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +45,5 @@ public class GlobalExceptionHandler {
                 ApiResponseDto.fail(404, e.getMessage())
         );
     }
+
 }

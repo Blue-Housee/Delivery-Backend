@@ -29,4 +29,8 @@ public class DeliveryAddress extends BaseEntity {
         this.request = request;
         this.user = user;
     }
+
+    public void update(String address){
+        this.address=address;
+    }
 }
