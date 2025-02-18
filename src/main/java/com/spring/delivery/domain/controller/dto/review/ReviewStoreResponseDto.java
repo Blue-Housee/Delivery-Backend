@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.review;
 
 import lombok.Builder;
 import lombok.Getter;
