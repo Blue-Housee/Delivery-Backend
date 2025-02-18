@@ -93,8 +93,8 @@ public class StoreService {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        // 가게 목록 조회
-        Page<Store> storePage = storeRepository.findAll(pageable);
+        // 활성 상태의 스토어 목록 조회
+        Page<Store> storePage = storeRepository.findByDeletedAtIsNull(pageable); // 변경된 부분
 
         // Store 객체를 StoreListResponseDto로 변환
         Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
@@ -198,6 +198,37 @@ public class StoreService {
     }
 
 
+    @Transactional
+    public ApiResponseDto deleteStore(UserDetailsImpl userDetails, UUID storeId) {
+        // 권한 확인 (OWNER, MASTER만 가능)
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        boolean isOwnerOrMaster = authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
 
+        if (!isOwnerOrMaster) {
+            return ApiResponseDto.fail(403, "가게를 삭제할 권한이 없습니다.");
+        }
+
+        // 가게 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
+
+        // 이미 삭제된 가게인지 확인
+        if (store.getDeletedAt() != null) {
+            return ApiResponseDto.fail(400, "이미 삭제된 가게입니다.");
+        }
+
+        // StoreCategory 삭제 (소프트 삭제)
+        List<StoreCategory> storeCategories = storeCategoryRepository.findByStoreId(storeId);
+        storeCategories.forEach(storeCategory -> {
+            storeCategory.delete(userDetails.getUsername());
+        });
+
+        // 스토어 소프트 삭제
+        store.delete(userDetails.getUsername());
+
+        // 성공적인 응답 반환
+        return ApiResponseDto.success("가게가 성공적으로 삭제되었습니다.");
+    }
 
 }

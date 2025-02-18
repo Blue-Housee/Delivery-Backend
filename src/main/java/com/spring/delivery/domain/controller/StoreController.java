@@ -55,5 +55,12 @@ public class StoreController {
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
+    @DeleteMapping("/{id}") // 소프트 삭제 메서드
+    public ResponseEntity<ApiResponseDto> deleteStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id) {
+        ApiResponseDto responseDto = storeService.deleteStore(userDetails, id);
+
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
 
 }
