@@ -108,6 +108,11 @@ public class UserService {
             throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
         }
 
+        //상위 권한자의 정보 변경 차단(ex. MANAGER가 MASTER 정보는 변경할 수 없음)
+        if(Role.isGreaterThen(user.getRole(), currentUserRole)) {
+            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+        }
+
         //TODO: username 변경 시, Jwt 를 새로 발급해 주던지, 로그아웃 시키고, 로그인하도록 해야함. => 지금은 client가 없으므로, Jwt를 새로 발급해줘야 할 듯.
 
         // username, email 중복 확인
