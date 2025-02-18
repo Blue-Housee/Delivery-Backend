@@ -5,10 +5,13 @@ import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -28,8 +31,10 @@ public class UserController {
     }
 
     @PostMapping("/user/signUp") //회원가입
-    private ResponseEntity<ApiResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
+    private ResponseEntity<ApiResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestDto, BindingResult bindingResult) {
 
+        // validation 예외처리
+        raiseValidationException(bindingResult);
         User createdUser = userService.signup(requestDto);
 
         return ResponseEntity
@@ -100,9 +105,13 @@ public class UserController {
     @PatchMapping("/user/{id}")
     private ResponseEntity<ApiResponseDto> updateUser(
             @PathVariable("id") Long id,
-            @RequestBody UserUpdateRequestDto requestDto,
+            @Valid @RequestBody UserUpdateRequestDto requestDto,
+            BindingResult bindingResult,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
+        // validation 예외처리
+        raiseValidationException(bindingResult);
+
         User user = userService.updateUser(id, requestDto, userDetails);
         return ResponseEntity
                 .ok(
@@ -132,6 +141,16 @@ public class UserController {
                                         .build()
                         )
                 );
+    }
+
+
+    private static void raiseValidationException(BindingResult bindingResult) {
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+        if(fieldErrors.size() > 0){
+            for(FieldError fieldError : fieldErrors){
+                throw new IllegalArgumentException(fieldError.getDefaultMessage());
+            }
+        }
     }
 
 }
