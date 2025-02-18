@@ -37,4 +37,13 @@ public class DeliveryAddressController {
 
         return ResponseEntity.ok(apiResponseDto);
     }
+
+    @GetMapping("/address/{id}")
+    public ResponseEntity<ApiResponseDto> selectDeliveryAddress(@PathVariable UUID id,
+                                                                @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.selectDeliveryAddress(id, userDetails));
+
+        return ResponseEntity.ok(apiResponseDto);
+    }
 }

@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressMessageRequestDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressRequestDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressResponseDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
@@ -21,7 +22,7 @@ public class DeliveryAddressService {
 
     private final DeliveryAddressRepository deliveryAddressRepository;
 
-    public DeliveryAddressResponseDto createDeliveryAddress(DeliveryAddressRequestDto dto,
+    public DeliveryAddressMessageRequestDto createDeliveryAddress(DeliveryAddressRequestDto dto,
                                                             UserDetailsImpl userDetails) {
         List<DeliveryAddress> existsDeliveryAddress = deliveryAddressRepository.findByUser_Id(userDetails.getUser().getId());
 
@@ -41,13 +42,13 @@ public class DeliveryAddressService {
 
         deliveryAddressRepository.save(deliveryAddress);
 
-        return DeliveryAddressResponseDto.builder()
+        return DeliveryAddressMessageRequestDto.builder()
                 .message("배송지가 생성되었습니다")
                 .build();
     }
 
     @Transactional
-    public DeliveryAddressResponseDto updateDeliveryAddress(UUID id,
+    public DeliveryAddressMessageRequestDto updateDeliveryAddress(UUID id,
                                                             DeliveryAddressUpdateRequestDto dto,
                                                             UserDetailsImpl userDetails) {
 
@@ -68,7 +69,25 @@ public class DeliveryAddressService {
 
         deliveryAddress.update(dto.getAddress());
 
-        return DeliveryAddressResponseDto.builder()
+        return DeliveryAddressMessageRequestDto.builder()
                 .message("배송지가 수정되었습니다.").build();
+    }
+
+    public DeliveryAddressResponseDto selectDeliveryAddress(UUID id, UserDetailsImpl userDetails) {
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(id).orElseThrow(
+                () -> new NoSuchElementException("해당되는 배송지가 없습니다."));
+
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        if(deliveryAddress.getUser().getId() != userDetails.getUser().getId() ||
+                currentUserRole != Role.CUSTOMER){
+            throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
+        }
+
+        return DeliveryAddressResponseDto.builder()
+                .id(deliveryAddress.getId())
+                .address(deliveryAddress.getAddress())
+                .request(deliveryAddress.getRequest())
+                .build();
     }
 }
