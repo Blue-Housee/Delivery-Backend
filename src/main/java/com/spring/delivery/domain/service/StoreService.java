@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
@@ -11,8 +12,13 @@ import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.domain.domain.repository.StoreCategoryRepository; // 추가
 import com.spring.delivery.global.security.UserDetailsImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -78,4 +84,38 @@ public class StoreService {
         // 성공적인 응답 반환
         return ApiResponseDto.success(store.getId());
     }
+
+    @Transactional(readOnly = true)
+    public ApiResponseDto<Page<StoreListResponseDto>> getAllStores(int page, int size, String sortBy, boolean isAsc) {
+        // 정렬 방향 설정
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // 가게 목록 조회
+        Page<Store> storePage = storeRepository.findAll(pageable);
+
+        // Store 객체를 StoreListResponseDto로 변환
+        Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
+            List<String> categories = store.getStoreCategories().stream()
+                    .map(storeCategory -> storeCategory.getCategory().getName())
+                    .collect(Collectors.toList());
+
+            return new StoreListResponseDto(
+                    store.getId(),
+                    store.getName(),
+                    store.getAddress(),
+                    store.getTel(),
+                    store.isOpen_status(),
+                    categories,
+                    store.getCreatedAt(),
+                    store.getUpdatedAt()
+            );
+        });
+
+        // ApiResponseDto로 응답 반환
+        return ApiResponseDto.success(responseDtoPage);
+    }
+
+
+
 }
