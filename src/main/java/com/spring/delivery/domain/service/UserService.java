@@ -174,7 +174,7 @@ public class UserService {
         return user;
     }
 
-    public Page<User> getAllUsers(UserDetailsImpl userDetails, int page, int size) {
+    public Page<User> searchUsers(UserDetailsImpl userDetails, int page, int size, String username) {
         //관리자 권한 확인(MANAGER, MASTER)
         if(userDetails.getUser().getRole() != Role.MANAGER && 
                 userDetails.getUser().getRole() != Role.MASTER
@@ -183,11 +183,16 @@ public class UserService {
         }
 
         // TODO: sort 방식 변경
-        //페이지네이션 설정
+        // 페이지네이션 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
+        // TODO:QueryDSL 도입해서 검색 형식 변경
+        // username 포함한 유저 검색
+        if (StringUtils.hasText(username)) {
+            Page<User> userList = userRepository.findAllByUsernameContains(username, pageable);
+            return userList;
+        }
         Page<User> userList = userRepository.findAll(pageable);
-
         return userList;
     }
 }
