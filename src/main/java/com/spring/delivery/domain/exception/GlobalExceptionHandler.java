@@ -6,6 +6,7 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -43,6 +44,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDto> handleNoSuchElementException(NoSuchElementException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 ApiResponseDto.fail(404, e.getMessage())
+        );
+    }
+
+    //validation에 대한 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseDto> handleNotNullElementException(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(e.getStatusCode()).body(
+                ApiResponseDto.fail(e.getStatusCode().value(), e.getFieldError().getDefaultMessage())
         );
     }
 

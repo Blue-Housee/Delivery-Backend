@@ -6,6 +6,7 @@ import com.spring.delivery.domain.controller.dto.review.ReviewUpdateRequestDto;
 import com.spring.delivery.domain.service.ReviewService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class ReviewController {
     //리뷰 생성
     @PostMapping("/stores/{storeId}/reviews")
     public ResponseEntity<ApiResponseDto> createReview (@PathVariable UUID storeId,
-                                                        @RequestBody ReviewRequestDto dto,
+                                                        @Valid @RequestBody ReviewRequestDto dto,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.createReview(storeId, dto, userDetails));
@@ -54,7 +55,7 @@ public class ReviewController {
 
     @PutMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponseDto> updateReview (@PathVariable UUID reviewId,
-                                                        @RequestBody ReviewUpdateRequestDto dto,
+                                                        @Valid @RequestBody ReviewUpdateRequestDto dto,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.updateReview(reviewId, dto, userDetails));

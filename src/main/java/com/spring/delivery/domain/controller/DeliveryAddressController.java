@@ -5,6 +5,7 @@ import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddress
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
 import com.spring.delivery.domain.service.DeliveryAddressService;
 import com.spring.delivery.global.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +22,7 @@ public class DeliveryAddressController {
 
     //주문지 생성
     @PostMapping("/address")
-    public ResponseEntity<ApiResponseDto> createDeliveryAddress(@RequestBody DeliveryAddressRequestDto dto,
+    public ResponseEntity<ApiResponseDto> createDeliveryAddress(@Valid @RequestBody DeliveryAddressRequestDto dto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.createDeliveryAddress(dto,userDetails));
@@ -32,7 +33,7 @@ public class DeliveryAddressController {
     //주문지 수정
     @PatchMapping("/address/{id}")
     public ResponseEntity<ApiResponseDto> updateDeliveryAddress(@PathVariable UUID id,
-                                                                @RequestBody DeliveryAddressUpdateRequestDto dto,
+                                                                @Valid @RequestBody DeliveryAddressUpdateRequestDto dto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.updateDeliveryAddress(id, dto,userDetails));

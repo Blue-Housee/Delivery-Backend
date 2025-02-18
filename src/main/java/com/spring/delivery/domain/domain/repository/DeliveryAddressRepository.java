@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress, UUID> {
     List<DeliveryAddress> findByUser_Id(Long userId);
+    DeliveryAddress findByUser_IdAndAddress(Long userId, String address);
 }
