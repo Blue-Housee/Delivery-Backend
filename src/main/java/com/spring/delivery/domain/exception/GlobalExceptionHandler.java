@@ -1,19 +1,27 @@
 package com.spring.delivery.domain.exception;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.View;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final View error;
+
+    public GlobalExceptionHandler(View error) {
+        this.error = error;
+    }
 
     // 중복된 사용자명 또는 이메일 등으로 발생하는 예외 처리 : 400
     @ExceptionHandler(IllegalArgumentException.class)
@@ -50,8 +58,15 @@ public class GlobalExceptionHandler {
     //validation에 대한 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponseDto> handleNotNullElementException(MethodArgumentNotValidException e) {
+        BindingResult bindingResult = e.getBindingResult();
+        FieldError fieldErrors = bindingResult.getFieldError();
+        String errorCode = fieldErrors.getCode(); //어노테이션명
+        String fieldError =e.getFieldError().getDefaultMessage(); //메세지
+
+
+
         return ResponseEntity.status(e.getStatusCode()).body(
-                ApiResponseDto.fail(e.getStatusCode().value(), e.getFieldError().getDefaultMessage())
+                ApiResponseDto.fail(e.getStatusCode().value(), "[" +errorCode+"] " +fieldError)
         );
     }
 
