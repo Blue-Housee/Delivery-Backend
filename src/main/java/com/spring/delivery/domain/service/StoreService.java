@@ -231,4 +231,48 @@ public class StoreService {
         return ApiResponseDto.success("가게가 성공적으로 삭제되었습니다.");
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponseDto<Page<StoreListResponseDto>> searchStores(String query, int page, int size, String sortBy, boolean isAsc) {
+        // 페이지당 노출 건수 제한
+        if (size != 10 && size != 30 && size != 50) {
+            size = 10; // 기본값으로 10으로 설정
+        }
+
+        // 정렬 방향 설정
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        // 기본 정렬 기준 설정
+        if (!sortBy.equals("createdAt") && !sortBy.equals("updatedAt")) {
+            sortBy = "createdAt"; // 기본값으로 생성일로 설정
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // 검색 수행
+        Page<Store> storePage = storeRepository.searchStores(query, pageable);
+
+        // Store 객체를 StoreListResponseDto로 변환
+        Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
+            // 카테고리 처리
+            List<String> categories = store.getStoreCategories().stream()
+                    .map(storeCategory -> storeCategory.getCategory().getName())
+                    .collect(Collectors.toList());
+
+            return new StoreListResponseDto(
+                    store.getId(),
+                    store.getName(),
+                    store.getAddress(),
+                    store.getTel(),
+                    store.isOpen_status(),
+                    categories,
+                    store.getCreatedAt(),
+                    store.getUpdatedAt()
+            );
+        });
+
+        // ApiResponseDto로 응답 반환
+        return ApiResponseDto.success(responseDtoPage);
+    }
+
+
 }

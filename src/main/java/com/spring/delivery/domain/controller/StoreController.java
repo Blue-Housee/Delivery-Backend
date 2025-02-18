@@ -62,5 +62,17 @@ public class StoreController {
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponseDto<Page<StoreListResponseDto>>> searchStores(
+            @RequestParam String query,
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size") int size,
+            @RequestParam(value = "sortBy") String sortBy,
+            @RequestParam(value = "isAsc") boolean isAsc) {
+        ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.searchStores(query, page, size, sortBy, isAsc);
+
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
 
 }
