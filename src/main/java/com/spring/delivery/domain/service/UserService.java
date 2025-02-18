@@ -10,6 +10,10 @@ import com.spring.delivery.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -170,7 +174,7 @@ public class UserService {
         return user;
     }
 
-    public List<User> getAllUsers(UserDetailsImpl userDetails) {
+    public Page<User> getAllUsers(UserDetailsImpl userDetails, int page, int size) {
         //관리자 권한 확인(MANAGER, MASTER)
         if(userDetails.getUser().getRole() != Role.MANAGER && 
                 userDetails.getUser().getRole() != Role.MASTER
@@ -178,7 +182,12 @@ public class UserService {
             throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
         }
 
-        List<User> userList = userRepository.findAll();
+        // TODO: sort 방식 변경
+        //페이지네이션 설정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<User> userList = userRepository.findAll(pageable);
+
         return userList;
     }
 }

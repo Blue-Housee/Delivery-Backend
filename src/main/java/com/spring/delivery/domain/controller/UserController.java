@@ -6,6 +6,7 @@ import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -64,23 +65,33 @@ public class UserController {
 
     @GetMapping("/user")
     private ResponseEntity<ApiResponseDto> getAllUsers(
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size //기본값 10
     ) {
-        List<User> userList = userService.getAllUsers(userDetails);
+        // client 에서 1페이지 요청하면 0페이지를 반환하기 위해 page-1로 설정.
+        Page<User> userList = userService.getAllUsers(userDetails, page-1, size);
         return ResponseEntity
                 .ok(
                         ApiResponseDto.success(
-                                //리스트 형태로 넣기
-                                userList.stream()
-                                        .map(user -> UserResponseDto.builder()
-                                                .userId(user.getId())
-                                                .username(user.getUsername())
-                                                .email(user.getEmail())
-                                                .role(user.getRole())
-                                                .deleted((user.getDeletedAt() != null))
-                                                .build()
+                                UserPageResponseDto.builder()
+                                        .page(userList.getNumber() + 1)
+                                        .size(userList.getSize())
+                                        .total(userList.getTotalPages())
+                                        .users(
+                                                //리스트 형태로 넣기
+                                                userList.stream()
+                                                        .map(user -> UserResponseDto.builder()
+                                                                .userId(user.getId())
+                                                                .username(user.getUsername())
+                                                                .email(user.getEmail())
+                                                                .role(user.getRole())
+                                                                .deleted((user.getDeletedAt() != null))
+                                                                .build()
+                                                        )
+                                                        .collect(Collectors.toList())
                                         )
-                                        .collect(Collectors.toList())
+                                        .build()
                         )
                 );
     }
@@ -109,7 +120,7 @@ public class UserController {
     private ResponseEntity<ApiResponseDto> deleteUser(
             @PathVariable("id") Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-    ){
+    ) {
         User user = userService.deleteUser(id, userDetails);
         return ResponseEntity
                 .ok(
