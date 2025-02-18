@@ -19,6 +19,7 @@ public class DeliveryAddressController {
 
     private final DeliveryAddressService deliveryAddressService;
 
+    //주문지 생성
     @PostMapping("/address")
     public ResponseEntity<ApiResponseDto> createDeliveryAddress(@RequestBody DeliveryAddressRequestDto dto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -28,6 +29,7 @@ public class DeliveryAddressController {
         return ResponseEntity.ok(apiResponseDto);
     }
 
+    //주문지 수정
     @PatchMapping("/address/{id}")
     public ResponseEntity<ApiResponseDto> updateDeliveryAddress(@PathVariable UUID id,
                                                                 @RequestBody DeliveryAddressUpdateRequestDto dto,
@@ -38,6 +40,7 @@ public class DeliveryAddressController {
         return ResponseEntity.ok(apiResponseDto);
     }
 
+    //주문지 검색
     @GetMapping("/address/{id}")
     public ResponseEntity<ApiResponseDto> selectDeliveryAddress(@PathVariable UUID id,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -47,6 +50,7 @@ public class DeliveryAddressController {
         return ResponseEntity.ok(apiResponseDto);
     }
 
+    //주문지 제거
     @DeleteMapping("/address/{id}")
     public ResponseEntity<ApiResponseDto> deleteDeliveryAddress(@PathVariable UUID id,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails

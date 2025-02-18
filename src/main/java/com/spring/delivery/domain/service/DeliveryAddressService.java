@@ -22,14 +22,18 @@ public class DeliveryAddressService {
 
     private final DeliveryAddressRepository deliveryAddressRepository;
 
+    //주문지 생성
     public DeliveryAddressMessageRequestDto createDeliveryAddress(DeliveryAddressRequestDto dto,
                                                             UserDetailsImpl userDetails) {
+
         List<DeliveryAddress> existsDeliveryAddress = deliveryAddressRepository.findByUser_Id(userDetails.getUser().getId());
 
+        // 배송지 중복 에러
         if(existsDeliveryAddress.stream().anyMatch(addr -> addr.getAddress().equals(dto.getAddress()))){
             throw new IllegalArgumentException("이미 존재하는 배송지입니다.");
         }
 
+        // 배송지 최대 갯수 제한 에러
         if(existsDeliveryAddress.size() >= 3){
             throw new IllegalArgumentException("최대 배송지는 3개입니다.");
         }
@@ -57,12 +61,13 @@ public class DeliveryAddressService {
 
         Role currentUserRole = userDetails.getUser().getRole();
 
-
+        //계정이 다르거나, 권한이 CUSTOMER이 아니면 에러
         if(deliveryAddress.getUser().getId() != userDetails.getUser().getId() ||
                 currentUserRole != Role.CUSTOMER){
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
         }
 
+        //수정핣 배송지와 기존 배송지가 같으면 에러
         if(deliveryAddress.getAddress().equals(dto.getAddress())){
             throw new IllegalArgumentException("수정할 배송지와 기존 배송지가 같습니다.");
         }
@@ -79,6 +84,12 @@ public class DeliveryAddressService {
 
         Role currentUserRole = userDetails.getUser().getRole();
 
+        //삭제된 데이터면 검색 X
+        if(deliveryAddress.getDeletedBy() != null){
+            throw new NoSuchElementException("삭제된 데이터입니다");
+        }
+
+        //계정이 다르거나 권한이 CUSTOMER이 아니면 에러
         if(deliveryAddress.getUser().getId() != userDetails.getUser().getId() ||
                 currentUserRole != Role.CUSTOMER){
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
@@ -99,11 +110,13 @@ public class DeliveryAddressService {
         String username = userDetails.getUser().getUsername();
         Role currentUserRole = userDetails.getUser().getRole();
 
+        //계정이 다르거나 권한이 CUSTOMER이 아니면 에러
         if(deliveryAddress.getUser().getId() != userDetails.getUser().getId() ||
                 currentUserRole != Role.CUSTOMER){
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
         }
 
+        //이미 제거된 데이터면 에러
         if(deliveryAddress.getDeletedBy() != null){
             throw new NoSuchElementException("이미 삭제된 데이터입니다");
         }
