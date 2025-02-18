@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
 import com.spring.delivery.domain.domain.entity.Store;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -114,6 +116,29 @@ public class StoreService {
 
         // ApiResponseDto로 응답 반환
         return ApiResponseDto.success(responseDtoPage);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponseDto<StoreDetailResponseDto> getStoreById(UUID id) {
+        Store store = storeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
+
+        List<String> categories = store.getStoreCategories().stream()
+                .map(storeCategory -> storeCategory.getCategory().getName())
+                .collect(Collectors.toList());
+
+        StoreDetailResponseDto responseDto = new StoreDetailResponseDto(
+                store.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getTel(),
+                store.isOpen_status(),
+                store.getStart_time(), // 시작 시간
+                store.getEnd_time(),   // 종료 시간
+                categories
+        );
+
+        return ApiResponseDto.success(responseDto);
     }
 
 

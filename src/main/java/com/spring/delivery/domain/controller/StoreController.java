@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
 import com.spring.delivery.domain.service.StoreService;
@@ -9,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -34,6 +37,13 @@ public class StoreController {
             @RequestParam(value = "sortBy") String sortBy,
             @RequestParam(value = "isAsc") boolean isAsc) {
         ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.getAllStores(page - 1, size, sortBy, isAsc);
+
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
+    @GetMapping("/{id}") // 단건 조회를 위한 메서드
+    public ResponseEntity<ApiResponseDto<StoreDetailResponseDto>> getStoreById(@PathVariable UUID id) {
+        ApiResponseDto<StoreDetailResponseDto> responseDto = storeService.getStoreById(id);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
