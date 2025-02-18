@@ -141,6 +141,63 @@ public class StoreService {
         return ApiResponseDto.success(responseDto);
     }
 
+    @Transactional
+    public ApiResponseDto updateStore(UserDetailsImpl userDetails, UUID storeId, StoreRequestDto requestDto) {
+        // 권한 확인 (OWNER, MASTER만 가능)
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        boolean isOwnerOrMaster = authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
+
+        if (!isOwnerOrMaster) {
+            return ApiResponseDto.fail(403, "가게를 수정할 권한이 없습니다.");
+        }
+
+        // 가게 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
+
+        // 가게 정보 수정
+        store.update(
+                requestDto.getName(),
+                requestDto.getAddress(),
+                requestDto.getTel(),
+                requestDto.isOpenStatus(),
+                requestDto.getStartTime(),
+                requestDto.getEndTime()
+        );
+
+        // 기존 카테고리 ID 목록
+        List<UUID> existingCategoryIds = store.getStoreCategories().stream()
+                .map(storeCategory -> storeCategory.getCategory().getId())
+                .toList();
+
+        // 새로운 카테고리 ID 목록
+        List<UUID> newCategoryIds = requestDto.getCategoryIds();
+
+        // 기존 카테고리 삭제 (요청에 없는 카테고리)
+        existingCategoryIds.stream()
+                .filter(categoryId -> !newCategoryIds.contains(categoryId))
+                .forEach(categoryId -> {
+                    StoreCategory storeCategory = storeCategoryRepository.findByStoreIdAndCategoryId(storeId, categoryId)
+                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                    storeCategoryRepository.delete(storeCategory);
+                });
+
+        // 새로운 카테고리 추가
+        newCategoryIds.stream()
+                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
+                .forEach(categoryId -> {
+                    // 카테고리 검증: ID로 Category 찾기
+                    Category category = categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                    storeCategoryRepository.save(StoreCategory.of(store, category)); // StoreCategory 객체 생성 및 저장
+                });
+
+        // 성공적인 응답 반환
+        return ApiResponseDto.success(store.getId());
+    }
+
+
 
 
 }

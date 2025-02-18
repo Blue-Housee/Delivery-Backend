@@ -48,4 +48,12 @@ public class StoreController {
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponseDto> updateStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody StoreRequestDto requestDto) {
+        ApiResponseDto responseDto = storeService.updateStore(userDetails, id, requestDto);
+
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
+
 }
