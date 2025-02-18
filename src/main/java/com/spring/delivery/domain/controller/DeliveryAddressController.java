@@ -29,7 +29,7 @@ public class DeliveryAddressController {
     }
 
     @PatchMapping("/address/{id}")
-    public ResponseEntity<ApiResponseDto> createDeliveryAddress(@PathVariable UUID id,
+    public ResponseEntity<ApiResponseDto> updateDeliveryAddress(@PathVariable UUID id,
                                                                 @RequestBody DeliveryAddressUpdateRequestDto dto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
