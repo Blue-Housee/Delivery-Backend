@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+
 import com.spring.delivery.domain.controller.dto.review.ReviewRequestDto;
 import com.spring.delivery.domain.controller.dto.review.ReviewUpdateRequestDto;
 import com.spring.delivery.domain.service.ReviewService;
@@ -62,14 +63,14 @@ public class ReviewController {
         return ResponseEntity.ok(apiResponseDto);
     }
 
+
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponseDto> deleteReview (@PathVariable UUID reviewId,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.deleteReview(reviewId, userDetails));
 
-        System.out.println("--------------------------------------------------controller");
-
         return ResponseEntity.ok(apiResponseDto);
+
     }
 }
