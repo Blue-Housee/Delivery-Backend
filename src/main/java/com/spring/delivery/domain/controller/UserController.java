@@ -11,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -50,12 +52,35 @@ public class UserController {
         return ResponseEntity
                 .ok(
                         ApiResponseDto.success(
-                                UserResponseDto
+                                UserDetailsResponseDto
                                         .builder()
                                         .userId(user.getId())
                                         .username(user.getUsername())
                                         .email(user.getEmail())
                                         .build()
+                        )
+                );
+    }
+
+    @GetMapping("/user")
+    private ResponseEntity<ApiResponseDto> getAllUsers(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<User> userList = userService.getAllUsers(userDetails);
+        return ResponseEntity
+                .ok(
+                        ApiResponseDto.success(
+                                //리스트 형태로 넣기
+                                userList.stream()
+                                        .map(user -> UserResponseDto.builder()
+                                                .userId(user.getId())
+                                                .username(user.getUsername())
+                                                .email(user.getEmail())
+                                                .role(user.getRole())
+                                                .deleted((user.getDeletedAt() != null))
+                                                .build()
+                                        )
+                                        .collect(Collectors.toList())
                         )
                 );
     }
@@ -70,7 +95,7 @@ public class UserController {
         return ResponseEntity
                 .ok(
                         ApiResponseDto.success(
-                                UserResponseDto
+                                UserDetailsResponseDto
                                         .builder()
                                         .userId(user.getId())
                                         .username(user.getUsername())

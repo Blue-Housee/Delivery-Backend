@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -167,5 +168,17 @@ public class UserService {
         user.delete(currentUsername); // 삭제한 사람: 로그인한 사용자
 
         return user;
+    }
+
+    public List<User> getAllUsers(UserDetailsImpl userDetails) {
+        //관리자 권한 확인(MANAGER, MASTER)
+        if(userDetails.getUser().getRole() != Role.MANAGER && 
+                userDetails.getUser().getRole() != Role.MASTER
+        ){
+            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+        }
+
+        List<User> userList = userRepository.findAll();
+        return userList;
     }
 }
