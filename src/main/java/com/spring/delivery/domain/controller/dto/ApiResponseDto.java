@@ -3,14 +3,14 @@ package com.spring.delivery.domain.controller.dto;
 import lombok.Getter;
 
 @Getter
-public class ApiResponseDto<T> {
-    private static final String SUCCESS_MESSAGE = "요청이 성공적으로 처리되었습니다.";
+public class ApiResponseDto <T>{
+    private static final String SUCCESS_MESSAGE ="요청이 성공적으로 처리되었습니다.";
 
     private int status;
     private String message;
     private T data;
 
-    public ApiResponseDto(int status, String message, T data) {
+    public ApiResponseDto(int status,String message, T data) {
         this.status = status;
         this.message = message;
         this.data = data;
