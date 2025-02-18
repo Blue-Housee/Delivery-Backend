@@ -68,8 +68,6 @@ public class ReviewController {
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.deleteReview(reviewId, userDetails));
 
-        System.out.println("--------------------------------------------------controller");
-
         return ResponseEntity.ok(apiResponseDto);
     }
 }
