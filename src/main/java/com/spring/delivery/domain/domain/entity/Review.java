@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -45,4 +46,5 @@ public class Review extends BaseEntity{
         this.score = score;
         this.contents = contents;
     }
+
 }
