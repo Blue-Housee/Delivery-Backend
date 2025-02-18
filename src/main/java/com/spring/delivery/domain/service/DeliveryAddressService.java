@@ -90,4 +90,28 @@ public class DeliveryAddressService {
                 .request(deliveryAddress.getRequest())
                 .build();
     }
+
+    @Transactional
+    public DeliveryAddressMessageRequestDto deleteDeliveryAddress(UUID id, UserDetailsImpl userDetails) {
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(id).orElseThrow(
+                () -> new NoSuchElementException("해당되는 배송지가 없습니다."));
+
+        String username = userDetails.getUser().getUsername();
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        if(deliveryAddress.getUser().getId() != userDetails.getUser().getId() ||
+                currentUserRole != Role.CUSTOMER){
+            throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
+        }
+
+        if(deliveryAddress.getDeletedBy() != null){
+            throw new NoSuchElementException("이미 삭제된 데이터입니다");
+        }
+
+        deliveryAddress.delete(username);
+
+        return DeliveryAddressMessageRequestDto.builder()
+                .message("배송지 삭제되었습니다.")
+                .build();
+    }
 }

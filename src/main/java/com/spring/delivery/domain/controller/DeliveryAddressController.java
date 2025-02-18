@@ -46,4 +46,13 @@ public class DeliveryAddressController {
 
         return ResponseEntity.ok(apiResponseDto);
     }
+
+    @DeleteMapping("/address/{id}")
+    public ResponseEntity<ApiResponseDto> deleteDeliveryAddress(@PathVariable UUID id,
+                                                                @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.deleteDeliveryAddress(id, userDetails));
+
+        return ResponseEntity.ok(apiResponseDto);
+    }
 }
