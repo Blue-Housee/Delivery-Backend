@@ -45,7 +45,7 @@ public class ReviewService {
 
         // CUSTOM만 접근 가능
         if (!currentUserRole.equals(Role.CUSTOMER)) {
-            log.warn("권한이 없습니다 : {}", currentUserRole.getAuthority()));
+            log.warn("권한이 없습니다 : {}", currentUserRole.getAuthority());
 
             throw new IllegalArgumentException("권한이 없습니다");
         }
