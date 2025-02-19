@@ -31,8 +31,8 @@ public class OrderController {
     ){
         // 잘들어왔니??
         log.info(orderRequestDto);
-        System.out.println("hi");
-        // orderservice에 주문생성기능 사용후 client로 return
+
+        // orderService 에 주문생성기능 사용후 client 로 return
         ApiResponseDto<OrderResponseDto> orderResponseDto = orderService.createOrder(orderRequestDto);
         return ResponseEntity.status(orderResponseDto.getStatus()).body(orderResponseDto);
     }

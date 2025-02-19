@@ -3,7 +3,11 @@ package com.spring.delivery.domain.service;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.OrderRequestDto;
 import com.spring.delivery.domain.controller.dto.OrderResponseDto;
+import com.spring.delivery.domain.domain.entity.Menu;
+import com.spring.delivery.domain.domain.entity.MenuOrder;
 import com.spring.delivery.domain.domain.entity.Order;
+import com.spring.delivery.domain.domain.repository.MenuOrderRepository;
+import com.spring.delivery.domain.domain.repository.MenuRepository;
 import com.spring.delivery.domain.domain.repository.OrderRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -19,13 +25,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final MenuOrderRepository menuOrderRepository;
+    private final MenuRepository menuRepository;
 
     @Transactional
     public ApiResponseDto<OrderResponseDto> createOrder(OrderRequestDto orderRequestDto) {
-        // 새로운 order 생성
+        // Order table 에 들어갈 객체 생성
         Order order = Order.createOrder(orderRequestDto);
         // DB에 저장
         orderRepository.save(order);
+
+        // 메뉴의 정보가 여러개이기 때문에 리스트로 반환
+        List<Map<UUID, Long>> menuInfo = orderRequestDto.getMenuInfo();
+
+        // 리스트의 정보를 MenuOrder table에 저장
+        for (Map<UUID, Long> menuItems : menuInfo) {
+            for (Map.Entry<UUID, Long> menuItem : menuItems.entrySet()) {
+                UUID menuId = menuItem.getKey();
+                Long amount = menuItem.getValue();
+                Menu menu = menuRepository.findById(menuId).orElse(null);
+                // 주문, 메뉴, 메뉴 수량
+                MenuOrder menuOrder = MenuOrder.createMenuOrder(order, menu , amount);
+                menuOrderRepository.save(menuOrder);
+            }
+        }
 
         // 새로운 주문생성 성공 반환 데이터 return
         return ApiResponseDto.success(OrderResponseDto.from(order));
