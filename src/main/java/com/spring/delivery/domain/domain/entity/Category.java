@@ -34,4 +34,8 @@ public class Category extends BaseEntity {
     public static Category of(String name) {
         return new Category(name);
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

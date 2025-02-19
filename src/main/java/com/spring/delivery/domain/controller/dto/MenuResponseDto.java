@@ -39,6 +39,4 @@ public class MenuResponseDto {
         return new MenuResponseDto(menu);
     }
 
-
-
 }
