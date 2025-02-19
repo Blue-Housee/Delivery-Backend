@@ -63,4 +63,14 @@ public class Store extends BaseEntity {
                            LocalDateTime startTime, LocalDateTime endTime, User user) {
         return new Store(name, address, tel, openStatus, startTime, endTime, user);
     }
+
+    public void update(String name, String address, String tel, boolean openStatus,
+                       LocalDateTime startTime, LocalDateTime endTime) {
+        this.name = name;
+        this.address = address;
+        this.tel = tel;
+        this.open_status = openStatus;
+        this.start_time = startTime;
+        this.end_time = endTime;
+    }
 }
