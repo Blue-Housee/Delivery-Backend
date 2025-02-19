@@ -41,6 +41,7 @@ public class UserController {
                 .created(URI.create("/user/" + createdUser.getId()))
                 .body(
                         ApiResponseDto.success(
+                                201,
                                 SignUpResponseDto
                                         .builder()
                                         .userId(createdUser.getId())

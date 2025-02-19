@@ -20,6 +20,10 @@ public class ApiResponseDto <T>{
         return new ApiResponseDto<>(200, SUCCESS_MESSAGE, data);  // default status 200
     }
 
+    public static <T> ApiResponseDto<T> success(int status, T data) {
+        return new ApiResponseDto<>(status, SUCCESS_MESSAGE, data);
+    }
+
     public static <T> ApiResponseDto<T> fail(int status, String message) {
         return new ApiResponseDto<>(status, message, null);  // default status 200
     }
