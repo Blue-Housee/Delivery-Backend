@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.controller.dto.review;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 

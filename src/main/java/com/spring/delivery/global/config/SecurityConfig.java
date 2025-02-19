@@ -7,6 +7,7 @@ import com.spring.delivery.global.util.JwtUtil;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -59,9 +60,10 @@ public class SecurityConfig{
         );
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() //resources 접근 허용
-                .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll() //로그인, 회원가입 요청 접근 허용
-                .anyRequest().authenticated() // 그 외 모든 요청 인증처리
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // resources 접근 허용
+                .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll() // 로그인, 회원가입 요청 접근 허용
+                .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll() // GET 요청에 대해서만 허용
+                .anyRequest().authenticated() // 다른 모든 요청은 인증 필요
         );
 
         // 필터 관리
