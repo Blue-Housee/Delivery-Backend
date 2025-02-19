@@ -56,6 +56,14 @@ public class OrderController {
         return ResponseEntity.status(orderResponseDto.getStatus()).body(orderResponseDto);
     }
 
-
+    // 주문삭제 api
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<OrderResponseDto>> deleteOrder(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        ApiResponseDto<OrderResponseDto> orderResponseDto = orderService.deleteOrder(id, userDetails);
+        return ResponseEntity.status(orderResponseDto.getStatus()).body(orderResponseDto);
+    }
 
 }

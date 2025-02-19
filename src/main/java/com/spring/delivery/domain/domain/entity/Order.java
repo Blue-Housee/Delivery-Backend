@@ -38,9 +38,8 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    private Order(User user, String order_status, Long total_price, Payment payment) {
-        this.user = user;
-        this.order_status = order_status;
+    private Order(User userId, String order_type, Long total_price, Payment payment) {
+        this.user = userId;
         this.order_type = order_type;
         this.total_price = total_price;
         this.payment = payment;
@@ -62,4 +61,7 @@ public class Order extends BaseEntity {
         if (orderRequestDto.getUserId() != null){ order.user = orderRequestDto.getUserId(); }
         if (orderRequestDto.getOrderType() != null){ order.order_type = orderRequestDto.getOrderType(); }
     }
+
+
+
 }
