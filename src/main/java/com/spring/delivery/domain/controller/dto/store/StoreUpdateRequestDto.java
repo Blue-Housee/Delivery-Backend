@@ -9,12 +9,12 @@ import java.util.UUID;
 
 @Getter
 @Builder
-public class StoreRequestDto {
+public class StoreUpdateRequestDto {
     private String name;
     private List<UUID> categoryIds;
     private String address;
     private String tel;
-    private boolean openStatus;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private boolean open_status;
+    private LocalTime start_time;
+    private LocalTime end_time;
 }

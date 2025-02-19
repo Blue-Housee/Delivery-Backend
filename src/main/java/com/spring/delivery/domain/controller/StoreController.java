@@ -1,9 +1,10 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
 import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
+import com.spring.delivery.domain.controller.dto.store.StoreUpdateRequestDto;
 import com.spring.delivery.domain.service.StoreService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,7 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponseDto> createStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody StoreRequestDto requestDto) {
+    public ResponseEntity<ApiResponseDto> createStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody StoreCreateRequestDto requestDto) {
         ApiResponseDto responseDto = storeService.createStore(userDetails, requestDto);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
@@ -49,7 +50,7 @@ public class StoreController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponseDto> updateStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody StoreRequestDto requestDto) {
+    public ResponseEntity<ApiResponseDto> updateStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody StoreUpdateRequestDto requestDto) {
         ApiResponseDto responseDto = storeService.updateStore(userDetails, id, requestDto);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);

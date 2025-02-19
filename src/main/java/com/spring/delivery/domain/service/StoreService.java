@@ -1,9 +1,10 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
 import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
+import com.spring.delivery.domain.controller.dto.store.StoreUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
 import com.spring.delivery.domain.domain.entity.User;
@@ -42,7 +43,7 @@ public class StoreService {
         this.categoryRepository = categoryRepository;
     }
 
-    public ApiResponseDto createStore(UserDetailsImpl userDetails, StoreRequestDto requestDto) {
+    public ApiResponseDto createStore(UserDetailsImpl userDetails, StoreCreateRequestDto requestDto) {
         // User 객체를 가져오는 로직
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
@@ -61,9 +62,9 @@ public class StoreService {
                 requestDto.getName(),
                 requestDto.getAddress(),
                 requestDto.getTel(),
-                requestDto.isOpenStatus(),
-                requestDto.getStartTime(),
-                requestDto.getEndTime(),
+                requestDto.isOpen_status(),
+                requestDto.getStart_time(),
+                requestDto.getEnd_time(),
                 user // User 객체
         );
 
@@ -142,7 +143,7 @@ public class StoreService {
     }
 
     @Transactional
-    public ApiResponseDto updateStore(UserDetailsImpl userDetails, UUID storeId, StoreRequestDto requestDto) {
+    public ApiResponseDto updateStore(UserDetailsImpl userDetails, UUID storeId, StoreUpdateRequestDto requestDto) {
         // 권한 확인 (OWNER, MASTER만 가능)
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         boolean isOwnerOrMaster = authorities.stream()
@@ -161,9 +162,9 @@ public class StoreService {
                 requestDto.getName(),
                 requestDto.getAddress(),
                 requestDto.getTel(),
-                requestDto.isOpenStatus(),
-                requestDto.getStartTime(),
-                requestDto.getEndTime()
+                requestDto.isOpen_status(),
+                requestDto.getStart_time(),
+                requestDto.getEnd_time()
         );
 
         // 기존 카테고리 ID 목록
