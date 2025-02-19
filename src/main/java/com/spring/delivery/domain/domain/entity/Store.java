@@ -2,12 +2,11 @@ package com.spring.delivery.domain.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,9 +28,9 @@ public class Store extends BaseEntity {
 
     private boolean open_status;
 
-    private LocalDateTime start_time;
+    private LocalTime start_time;
 
-    private LocalDateTime end_time;
+    private LocalTime end_time;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -48,7 +47,7 @@ public class Store extends BaseEntity {
 
     // 프라이빗 생성자
     private Store(String name, String address, String tel, boolean openStatus,
-                  LocalDateTime startTime, LocalDateTime endTime, User user) {
+                  LocalTime startTime, LocalTime endTime, User user) {
         this.name = name;
         this.address = address;
         this.tel = tel;
@@ -60,12 +59,12 @@ public class Store extends BaseEntity {
 
     // 정적 팩토리 메서드
     public static Store of(String name, String address, String tel, boolean openStatus,
-                           LocalDateTime startTime, LocalDateTime endTime, User user) {
+                           LocalTime startTime, LocalTime endTime, User user) {
         return new Store(name, address, tel, openStatus, startTime, endTime, user);
     }
 
     public void update(String name, String address, String tel, boolean openStatus,
-                       LocalDateTime startTime, LocalDateTime endTime) {
+                       LocalTime startTime, LocalTime endTime) {
         this.name = name;
         this.address = address;
         this.tel = tel;

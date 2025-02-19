@@ -109,8 +109,8 @@ public class StoreService {
                     store.getTel(),
                     store.isOpen_status(),
                     categories,
-                    store.getCreatedAt(),
-                    store.getUpdatedAt()
+                    store.getStart_time(),
+                    store.getEnd_time()
             );
         });
 
@@ -265,8 +265,8 @@ public class StoreService {
                     store.getTel(),
                     store.isOpen_status(),
                     categories,
-                    store.getCreatedAt(),
-                    store.getUpdatedAt()
+                    store.getStart_time(),
+                    store.getEnd_time()
             );
         });
 
