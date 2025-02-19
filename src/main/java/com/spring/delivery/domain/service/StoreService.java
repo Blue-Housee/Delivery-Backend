@@ -1,10 +1,7 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
-import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreUpdateRequestDto;
+import com.spring.delivery.domain.controller.dto.store.*;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
 import com.spring.delivery.domain.domain.entity.User;
@@ -194,9 +191,21 @@ public class StoreService {
                     storeCategoryRepository.save(StoreCategory.of(store, category)); // StoreCategory 객체 생성 및 저장
                 });
 
+        // StoreUpdateResponseDto 객체 생성
+        StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(
+                store.getId(),
+                store.getName(),
+                newCategoryIds,
+                store.getAddress(),
+                store.getTel(),
+                store.getStart_time(),
+                store.getEnd_time()
+        );
+
         // 성공적인 응답 반환
-        return ApiResponseDto.success(store.getId());
+        return ApiResponseDto.success(responseDto);
     }
+
 
 
     @Transactional
