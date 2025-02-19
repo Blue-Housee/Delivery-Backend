@@ -14,7 +14,7 @@ public class StoreUpdateResponseDto {
     private String address;         // 가게 주소
     private String tel;             // 전화번호
     private LocalTime start_time;       // 오픈 시간
-    private LocalTime end_time;         // 종료 시간// 응답 메시지
+    private LocalTime end_time;         // 종료 시간
 
     public StoreUpdateResponseDto(UUID id, String name, List<UUID> categoryIds, String address,
                                   String tel, LocalTime start_time, LocalTime end_time) {

@@ -45,10 +45,10 @@ public class StoreService {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        // 권한 확인 (OWNER, MASTER만 가능)
+        // 권한 확인 (MASTER만 가능)
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         boolean isOwnerOrMaster = authorities.stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_MASTER"));
 
         if (!isOwnerOrMaster) {
             return ApiResponseDto.fail(403, "가게를 등록할 권한이 없습니다.");
