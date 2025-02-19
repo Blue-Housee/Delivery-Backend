@@ -51,7 +51,7 @@ public class OrderController {
         log.info(orderRequestDto);
         log.info(userDetails);
 
-        // orderservice에 주문수정기능 사용후 client로 return
+        // orderservice에 주문수정기능 사용후 client로 return  / orderId, orderDto, userDetails
         ApiResponseDto<OrderResponseDto> orderResponseDto = orderService.updateOrder(id, orderRequestDto, userDetails);
         return ResponseEntity.status(orderResponseDto.getStatus()).body(orderResponseDto);
     }

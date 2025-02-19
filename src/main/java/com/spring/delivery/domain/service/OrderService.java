@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -45,7 +46,7 @@ public class OrderService {
                 Long amount = menuItem.getValue();
                 Menu menu = menuRepository.findById(menuId).orElse(null);
                 // 주문, 메뉴, 메뉴 수량
-                MenuOrder menuOrder = MenuOrder.createMenuOrder(order, menu , amount);
+                MenuOrder menuOrder = MenuOrder.create(order, menu , amount);
                 menuOrderRepository.save(menuOrder);
             }
         }
@@ -73,9 +74,20 @@ public class OrderService {
         if (order == null) {
             return ApiResponseDto.fail(404, "해당 주문은 존재하지 않습니다.");
         }
-
-        // 주문이 존재한다면 주문 수정
+        // 주문이 존재한다면 Order 수정
         Order.update(order, orderRequestDto);
+
+        // orderRequestDto 에 updateMenuIds 가 있다면 MenuOrder 수정
+        if (!orderRequestDto.getUpdateMenuIds().isEmpty()) {
+            orderRequestDto.getUpdateMenuIds().forEach(orderMenuId -> {
+                UUID updateKey = orderMenuId.keySet().iterator().next();
+                Long updateValue = orderMenuId.values().iterator().next();
+
+                MenuOrder updateMenuOrder = menuOrderRepository.findById(updateKey).orElse(null);
+
+                MenuOrder.update(updateMenuOrder, updateValue);
+            });
+        }
 
         // 수정후 성공 메세지 return
         return ApiResponseDto.success(null);
