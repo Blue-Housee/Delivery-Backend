@@ -18,13 +18,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-    private static final String REVIEW_DELETE_MESSAGE = "리뷰가 삭제(숨김 처리)되었습니다.";
 
     private final ReviewRepository reviewRepository;
 
@@ -66,7 +66,7 @@ public class ReviewService {
     public ReviewDetailsResponseDto getReviewDetails(UUID reviewId)  {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(
-                () -> new IllegalArgumentException("해당되는 리뷰가 없습니다.")
+                () -> new NoSuchElementException("해당되는 리뷰가 없습니다.")
         );
 
         return ReviewDetailsResponseDto.builder()
@@ -118,7 +118,7 @@ public class ReviewService {
 
         //리뷰 아이디랑 계정이 일치하는지 확인
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다"));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 리뷰입니다"));
 
         Role currentUserRole = userDetails.getUser().getRole();
         //다른 유저면 에러
@@ -127,8 +127,6 @@ public class ReviewService {
         ){
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
         }
-
-
 
         review.update(dto.getRating(), dto.getComment());
 
@@ -141,11 +139,10 @@ public class ReviewService {
                 .build();
     }
 
-
     @Transactional
     public ReviewDeleteResponseDto deleteReview(UUID reviewId, UserDetailsImpl userDetails) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다"));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 리뷰입니다"));
 
         Role currentUserRole = userDetails.getUser().getRole();
 
@@ -160,14 +157,13 @@ public class ReviewService {
 
         //삭제된 정보가 있으면 에러 발생
         if(review.getDeletedBy() != null){
-            throw new IllegalArgumentException("이미 삭제된 리뷰입니다.");
+            throw new NoSuchElementException("이미 삭제된 리뷰입니다.");
         }
 
         review.delete(userDetails.getUser().getUsername());
 
-
         return ReviewDeleteResponseDto.builder()
-                .message(REVIEW_DELETE_MESSAGE)
+                .message("리뷰가 삭제(숨김 처리)되었습니다.")
                 .delete_at(review.getDeletedAt())
                 .build();
     }
