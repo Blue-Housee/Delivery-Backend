@@ -41,7 +41,7 @@ public class MenuService {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
 
         if (!isOwnerOrMaster) {
-            return ApiResponseDto.fail(403, "메뉴를 생성할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "메뉴를 생성할 권한이 없습니다.");
         }
 
         // 가게 정보 가져오기
@@ -65,14 +65,14 @@ public class MenuService {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
 
         if (!isOwnerOrMaster) {
-            return ApiResponseDto.fail(403, "메뉴를 수정할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "메뉴를 수정할 권한이 없습니다.");
         }
 
         Menu menu = menuRepository.findById(menuId)
                 .orElse(null);
 
         if (menu == null) {
-            return ApiResponseDto.fail(404, "메뉴를 찾을 수 없습니다.", null);
+            return ApiResponseDto.fail(404, "메뉴를 찾을 수 없습니다.");
         }
 
         Menu.update(menu, requestDto);
@@ -90,14 +90,14 @@ public class MenuService {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
 
         if (!isOwnerOrMaster) {
-            return ApiResponseDto.fail(403, "메뉴를 삭제할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "메뉴를 삭제할 권한이 없습니다.");
         }
 
         Menu menu = menuRepository.findById(menuId)
                 .orElse(null);
 
         if (menu == null) {
-            return ApiResponseDto.fail(404, "메뉴를 찾을 수 없습니다.", null);
+            return ApiResponseDto.fail(404, "메뉴를 찾을 수 없습니다.");
         }
 
         menu.delete(userDetails.getUsername()); // soft delete
@@ -115,13 +115,13 @@ public class MenuService {
 
             if (menu == null) {
                 log.error("메뉴를 찾을 수 없음: {}", menuId);
-                return ApiResponseDto.fail(404, "메뉴가 존재하지 않거나 삭제되었습니다.", null);
+                return ApiResponseDto.fail(404, "메뉴가 존재하지 않거나 삭제되었습니다.");
             }
 
             return ApiResponseDto.success(MenuResponseDto.from(menu));
         } catch (Exception e) {
             log.error("메뉴 조회 중 예외 발생: {}", e.getMessage(), e);
-            return ApiResponseDto.fail(500, "서버 내부 오류가 발생했습니다.", null);
+            return ApiResponseDto.fail(500, "서버 내부 오류가 발생했습니다.");
         }
     }
 
@@ -149,7 +149,7 @@ public class MenuService {
             return ApiResponseDto.success(response);
         } catch (Exception e) {
             log.error("메뉴 목록 조회 중 예외 발생: {}", e.getMessage(), e);
-            return ApiResponseDto.fail(500, "서버 내부 오류가 발생했습니다.", null);
+            return ApiResponseDto.fail(500, "서버 내부 오류가 발생했습니다.");
         }
     }
 }

@@ -43,7 +43,6 @@ public class Order extends BaseEntity {
         this.order_type = order_type;
         this.total_price = total_price;
         this.payment = payment;
-
     }
 
     public static Order createOrder(OrderRequestDto orderRequestDto) {
