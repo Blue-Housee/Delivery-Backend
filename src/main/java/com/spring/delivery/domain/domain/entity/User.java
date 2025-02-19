@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,5 +53,11 @@ public class User extends BaseEntity {
 
     public static User createUser(String username, String email, String password, Role role) {
         return new User(username, email, password, role);
+    }
+
+    public void updateUser(String username, String email, String password) {
+        this.username = StringUtils.hasText(username) ? username : this.username;
+        this.email = StringUtils.hasText(email) ? email : this.email;
+        this.password = StringUtils.hasText(password) ? password : this.password;
     }
 }

@@ -1,14 +1,15 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.user;
 
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
-public class SignUpRequestDto {
+@Builder
+public class UserResponseDto {
+    private Long userId;
     private String username;
     private String email;
-    private String password;
     private Role role;
-    private String adminToken;
+    private boolean deleted;
 }

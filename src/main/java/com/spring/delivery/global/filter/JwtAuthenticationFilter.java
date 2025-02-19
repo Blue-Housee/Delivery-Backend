@@ -1,7 +1,9 @@
 package com.spring.delivery.global.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spring.delivery.domain.controller.dto.SignInRequestDto;
+import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.user.SignInRequestDto;
+import com.spring.delivery.domain.controller.dto.user.SignInResponseDto;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import com.spring.delivery.global.util.JwtUtil;
@@ -16,8 +18,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -56,9 +56,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String token = jwtUtil.createToken(username, role);
 
         //Jwt Token을 JSON 응답으로 반환
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", "로그인 성공");
-        responseBody.put("token", token);
+        ApiResponseDto<SignInResponseDto> responseBody = ApiResponseDto.success(
+                SignInResponseDto.builder().token(token).build()
+        );
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -68,11 +68,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", "로그인 실패");
+
+        ApiResponseDto<String> responseBody = ApiResponseDto.fail(401, "로그인 실패");
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(401);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
         new ObjectMapper().writeValue(response.getWriter(), responseBody);
     }
 }
