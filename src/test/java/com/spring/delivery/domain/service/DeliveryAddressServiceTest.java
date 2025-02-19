@@ -2,6 +2,7 @@ package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressMessageRequestDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressRequestDto;
+import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressResponseDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.DeliveryAddress;
 import com.spring.delivery.domain.domain.entity.User;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -45,7 +47,6 @@ class DeliveryAddressServiceTest {
         User testUser = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
         user = userRepository.save(testUser);
         // 필요한 다른 필드도 설정합니다.
-        user = userRepository.save(testUser);
         userDetails = new UserDetailsImpl(user);
     }
 
@@ -173,9 +174,35 @@ class DeliveryAddressServiceTest {
 
     @Test
     @Order(6)
+    @DisplayName("배송지 검색")
+    @Transactional
+    void selectDeliveryAddress_success() {
+
+        // 배송지 생성
+        String initialAddress = "123 Test Street";
+        String request = "Leave at door";
+        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+
+        // 생성 테스트
+        DeliveryAddressMessageRequestDto createResponse =
+                deliveryAddressService.createDeliveryAddress(createDto, userDetails);
+        assertNotNull(createResponse);
+        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+
+        DeliveryAddressResponseDto selectDto = deliveryAddressService.selectDeliveryAddress(deliveryAddress.getId(), userDetails);
+
+        assertNotNull(selectDto);
+        assertEquals("123 Test Street", selectDto.getAddress());
+        assertEquals("Leave at door", selectDto.getRequest());
+    }
+
+    @Test
+    @Order(7)
     @DisplayName("해당되는 배송지가 없을 경우 실패")
     @Transactional
-    void updateDeliveryAddress_failure_notFound() {
+    void selectDeliveryAddress_failure_notFound() {
 
         // 배송지 생성
         String initialAddress = "123 Test Street";
@@ -197,10 +224,75 @@ class DeliveryAddressServiceTest {
         UUID selectId = UUID.randomUUID();
 
         NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () ->
-                deliveryAddressService.updateDeliveryAddress(selectId, updateDto, userDetails));
+                deliveryAddressService.selectDeliveryAddress(selectId, userDetails));
         assertNotNull(noSuchElementException);
         assertEquals("해당되는 배송지가 없습니다.", noSuchElementException.getMessage());
     }
+
+    @Test
+    @Order(8)
+    @DisplayName("이미 삭제된 데이터를 검색할 경우 에러")
+    @Transactional
+    void selectDeliveryAddress_failure_deleteData() {
+
+        // 배송지 생성
+        String initialAddress = "123 Test Street";
+        String request = "Leave at door";
+        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+
+        // 생성 테스트
+        DeliveryAddressMessageRequestDto createResponse =
+                deliveryAddressService.createDeliveryAddress(createDto, userDetails);
+        assertNotNull(createResponse);
+        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+
+        // 수정 요청 생성
+        String updatedAddress = "123 Test Street";
+        DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
+        updateDto.setAddress(updatedAddress);
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+
+        deliveryAddressService.deleteDeliveryAddress(deliveryAddress.getId(), userDetails);
+
+        NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () ->
+                deliveryAddressService.selectDeliveryAddress(deliveryAddress.getId(), userDetails));
+        assertNotNull(noSuchElementException);
+        assertEquals("삭제된 데이터입니다", noSuchElementException.getMessage());
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("배송지 삭제 성공")
+    @Transactional
+    void deleteDeliveryAddress_success() {
+
+        // 배송지 생성
+        String initialAddress = "123 Test Street";
+        String request = "Leave at door";
+        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+
+        // 생성 테스트
+        DeliveryAddressMessageRequestDto createResponse =
+                deliveryAddressService.createDeliveryAddress(createDto, userDetails);
+        assertNotNull(createResponse);
+        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+
+        // 수정 요청 생성
+        String updatedAddress = "123 Test Street";
+        DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
+        updateDto.setAddress(updatedAddress);
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+
+        deliveryAddressService.deleteDeliveryAddress(deliveryAddress.getId(), userDetails);
+
+        assertNotNull(deliveryAddress);
+        assertEquals("testUser", deliveryAddress.getDeletedBy());
+
+    }
+
+
     // 공통적으로 사용되는 DTO 생성 헬퍼 메소드
     private DeliveryAddressRequestDto createDto(String address, String request) {
         DeliveryAddressRequestDto dto = new DeliveryAddressRequestDto();
