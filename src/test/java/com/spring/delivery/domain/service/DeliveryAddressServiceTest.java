@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -27,6 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DeliveryAddressServiceTest {
+    private static final String ADDRESS = "345 Test Street";
+    private static final String REQUEST = "Leave at door";
+    private static final String UPDATE_ADDRESS = "123 Test Street";
+
+    private static final String CREATE_SUCCESS_MESSAGE = "배송지가 생성되었습니다";
+    private static final String UPDATE_SUCCESS_MESSAGE = "배송지가 수정되었습니다.";
+    private static final String ALREADY_DELETE_DATA_MESSAGE = "삭제된 데이터입니다";
+    private static final String ALREADY_DATA_MESSAGE = "이미 존재하는 배송지입니다.";
+    private static final String MAXIMUM_DATA_MESSAGE = "최대 배송지는 3개입니다.";
+    private static final String SAME_DATA_MESSAGE = "수정할 배송지와 기존 배송지가 같습니다.";
+    private static final String NO_DATA_MESSAGE = "해당되는 배송지가 없습니다.";
 
     @Autowired
     private DeliveryAddressService deliveryAddressService;
@@ -55,16 +65,14 @@ class DeliveryAddressServiceTest {
     @DisplayName("배송지 생성 성공")
     @Transactional
     void createDeliveryAddress_success() {
-        String address = "345 Test Street";
-        String request = "Leave at door";
 
-        DeliveryAddressRequestDto requestDto = createDto(address, request);
+        DeliveryAddressRequestDto requestDto = createDto(ADDRESS, REQUEST);
 
         DeliveryAddressMessageRequestDto responseDto =
                 deliveryAddressService.createDeliveryAddress(requestDto, userDetails);
 
         assertNotNull(responseDto);
-        assertEquals("배송지가 생성되었습니다", responseDto.getMessage());
+        assertEquals(CREATE_SUCCESS_MESSAGE, responseDto.getMessage());
     }
 
     @Test
@@ -72,10 +80,8 @@ class DeliveryAddressServiceTest {
     @DisplayName("배송지 중복 생성 실패")
     @Transactional
     void createDeliveryAddress_failure_duplicate() {
-        String address = "345 Test Street";
-        String request = "Leave at door";
 
-        DeliveryAddressRequestDto requestDto = createDto(address, request);
+        DeliveryAddressRequestDto requestDto = createDto(ADDRESS, REQUEST);
 
         // 첫 번째 생성은 성공
         deliveryAddressService.createDeliveryAddress(requestDto, userDetails);
@@ -84,7 +90,7 @@ class DeliveryAddressServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 deliveryAddressService.createDeliveryAddress(requestDto, userDetails)
         );
-        assertEquals("이미 존재하는 배송지입니다.", exception.getMessage());
+        assertEquals(ALREADY_DATA_MESSAGE, exception.getMessage());
     }
 
     @Test
@@ -104,7 +110,7 @@ class DeliveryAddressServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 deliveryAddressService.createDeliveryAddress(dto4, userDetails)
         );
-        assertEquals("최대 배송지는 3개입니다.", exception.getMessage());
+        assertEquals(MAXIMUM_DATA_MESSAGE, exception.getMessage());
     }
 
     @Test
@@ -112,32 +118,25 @@ class DeliveryAddressServiceTest {
     @DisplayName("배송지 수정 성공")
     @Transactional
     void updateDeliveryAddress_success() {
-
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
         assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
 
         // 수정 요청 생성
-        String updatedAddress = "345 Test Street";
         DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
-        updateDto.setAddress(updatedAddress);
+        updateDto.setAddress(UPDATE_ADDRESS);
 
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), ADDRESS);
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
-
-        //uuid
         DeliveryAddressMessageRequestDto updateResponse =
                 deliveryAddressService.updateDeliveryAddress(deliveryAddress.getId(), updateDto, userDetails);
 
         assertNotNull(updateResponse);
-        assertEquals("배송지가 수정되었습니다.", updateResponse.getMessage());
+        assertEquals(UPDATE_SUCCESS_MESSAGE, updateResponse.getMessage());
     }
 
     @Test
@@ -145,31 +144,25 @@ class DeliveryAddressServiceTest {
     @DisplayName("기존 배송지와 수정할 배송지 같을 경우 실패")
     @Transactional
     void updateDeliveryAddress_failure_duplicate() {
-
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
         assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
 
         // 수정 요청 생성
-        String updatedAddress = "123 Test Street";
         DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
-        updateDto.setAddress(updatedAddress);
+        updateDto.setAddress(ADDRESS);
 
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), ADDRESS);
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
-
-        //uuid
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () ->
                 deliveryAddressService.updateDeliveryAddress(deliveryAddress.getId(), updateDto, userDetails));
+
         assertNotNull(illegalArgumentException);
-        assertEquals("수정할 배송지와 기존 배송지가 같습니다.", illegalArgumentException.getMessage());
+        assertEquals(SAME_DATA_MESSAGE, illegalArgumentException.getMessage());
     }
 
     @Test
@@ -177,25 +170,22 @@ class DeliveryAddressServiceTest {
     @DisplayName("배송지 검색")
     @Transactional
     void selectDeliveryAddress_success() {
-
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
         assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), ADDRESS);
 
         DeliveryAddressResponseDto selectDto = deliveryAddressService.selectDeliveryAddress(deliveryAddress.getId(), userDetails);
 
         assertNotNull(selectDto);
-        assertEquals("123 Test Street", selectDto.getAddress());
-        assertEquals("Leave at door", selectDto.getRequest());
+        assertEquals(ADDRESS, selectDto.getAddress());
+        assertEquals(REQUEST, selectDto.getRequest());
     }
 
     @Test
@@ -204,29 +194,22 @@ class DeliveryAddressServiceTest {
     @Transactional
     void selectDeliveryAddress_failure_notFound() {
 
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
-        // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
-        assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
 
-        // 수정 요청 생성
-        String updatedAddress = "123 Test Street";
-        DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
-        updateDto.setAddress(updatedAddress);
+        assertNotNull(createResponse);
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
 
         // 검색할 UUID(없는 데이터)
         UUID selectId = UUID.randomUUID();
 
         NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () ->
                 deliveryAddressService.selectDeliveryAddress(selectId, userDetails));
+
         assertNotNull(noSuchElementException);
-        assertEquals("해당되는 배송지가 없습니다.", noSuchElementException.getMessage());
+        assertEquals(NO_DATA_MESSAGE, noSuchElementException.getMessage());
     }
 
     @Test
@@ -235,30 +218,23 @@ class DeliveryAddressServiceTest {
     @Transactional
     void selectDeliveryAddress_failure_deleteData() {
 
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
         assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
 
-        // 수정 요청 생성
-        String updatedAddress = "123 Test Street";
-        DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
-        updateDto.setAddress(updatedAddress);
-
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), ADDRESS);
 
         deliveryAddressService.deleteDeliveryAddress(deliveryAddress.getId(), userDetails);
 
         NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () ->
                 deliveryAddressService.selectDeliveryAddress(deliveryAddress.getId(), userDetails));
+
         assertNotNull(noSuchElementException);
-        assertEquals("삭제된 데이터입니다", noSuchElementException.getMessage());
+        assertEquals(ALREADY_DELETE_DATA_MESSAGE, noSuchElementException.getMessage());
     }
 
     @Test
@@ -267,28 +243,20 @@ class DeliveryAddressServiceTest {
     @Transactional
     void deleteDeliveryAddress_success() {
 
-        // 배송지 생성
-        String initialAddress = "123 Test Street";
-        String request = "Leave at door";
-        DeliveryAddressRequestDto createDto = createDto(initialAddress, request);
+        DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
         DeliveryAddressMessageRequestDto createResponse =
                 deliveryAddressService.createDeliveryAddress(createDto, userDetails);
         assertNotNull(createResponse);
-        assertEquals("배송지가 생성되었습니다", createResponse.getMessage());
+        assertEquals(CREATE_SUCCESS_MESSAGE, createResponse.getMessage());
 
-        // 수정 요청 생성
-        String updatedAddress = "123 Test Street";
-        DeliveryAddressUpdateRequestDto updateDto = new DeliveryAddressUpdateRequestDto();
-        updateDto.setAddress(updatedAddress);
-
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), initialAddress);
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUser_IdAndAddress(user.getId(), ADDRESS);
 
         deliveryAddressService.deleteDeliveryAddress(deliveryAddress.getId(), userDetails);
 
         assertNotNull(deliveryAddress);
-        assertEquals("testUser", deliveryAddress.getDeletedBy());
+        assertEquals(user.getUsername(), deliveryAddress.getDeletedBy());
 
     }
 
