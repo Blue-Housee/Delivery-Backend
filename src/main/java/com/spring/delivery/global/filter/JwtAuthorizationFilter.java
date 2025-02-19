@@ -1,5 +1,7 @@
 package com.spring.delivery.global.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.global.security.UserDetailsServiceImpl;
 import com.spring.delivery.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -40,7 +42,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             log.info(tokenValue);
 
             if (!jwtUtil.validateToken(tokenValue)) {
+
                 log.error("Token Error");
+                // 401 Unauthorized 응답 반환
+                res.setContentType("application/json");
+                res.setCharacterEncoding("UTF-8");
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                new ObjectMapper().writeValue(res.getWriter(),
+                        ApiResponseDto.fail(401, "유효하지 않은 토큰입니다.")
+                );
                 return;
             }
 
@@ -50,11 +60,20 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 setAuthentication(info.getSubject());
             } catch (Exception e) {
                 log.error(e.getMessage());
+                // 401 Unauthorized 응답 반환 (인증 실패)
+                res.setContentType("application/json");
+                res.setCharacterEncoding("UTF-8");
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                new ObjectMapper().writeValue(res.getWriter(),
+                        ApiResponseDto.fail(401, "인증에 실패하였습니다.")
+                );
                 return;
+
             }
         }
 
         filterChain.doFilter(req, res);
+
     }
 
     // 인증 처리
