@@ -2,14 +2,14 @@ package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.store.*;
+import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
 import com.spring.delivery.domain.domain.entity.User;
-import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.repository.CategoryRepository;
+import com.spring.delivery.domain.domain.repository.StoreCategoryRepository;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
-import com.spring.delivery.domain.domain.repository.StoreCategoryRepository; // 추가
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -154,59 +154,58 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
 
-        // 가게 정보 수정
+        // 가게 정보 수정 (null 체크 후 변경)
         store.update(
-                requestDto.getName(),
-                requestDto.getAddress(),
-                requestDto.getTel(),
+                requestDto.getName() != null ? requestDto.getName() : store.getName(),
+                requestDto.getAddress() != null ? requestDto.getAddress() : store.getAddress(),
+                requestDto.getTel() != null ? requestDto.getTel() : store.getTel(),
                 requestDto.isOpen_status(),
-                requestDto.getStart_time(),
-                requestDto.getEnd_time()
+                requestDto.getStart_time() != null ? requestDto.getStart_time() : store.getStart_time(),
+                requestDto.getEnd_time() != null ? requestDto.getEnd_time() : store.getEnd_time()
         );
 
-        // 기존 카테고리 ID 목록
-        List<UUID> existingCategoryIds = store.getStoreCategories().stream()
-                .map(storeCategory -> storeCategory.getCategory().getId())
-                .toList();
+        // 요청에서 categoryIds가 있을 때만 변경
+        if (requestDto.getCategoryIds() != null) {
+            List<UUID> existingCategoryIds = store.getStoreCategories().stream()
+                    .map(storeCategory -> storeCategory.getCategory().getId())
+                    .toList();
 
-        // 새로운 카테고리 ID 목록
-        List<UUID> newCategoryIds = requestDto.getCategoryIds();
+            List<UUID> newCategoryIds = requestDto.getCategoryIds();
 
-        // 기존 카테고리 삭제 (요청에 없는 카테고리)
-        existingCategoryIds.stream()
-                .filter(categoryId -> !newCategoryIds.contains(categoryId))
-                .forEach(categoryId -> {
-                    StoreCategory storeCategory = storeCategoryRepository.findByStoreIdAndCategoryId(storeId, categoryId)
-                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
-                    storeCategoryRepository.delete(storeCategory);
-                });
+            // 기존 카테고리 삭제 (요청에 없는 카테고리)
+            existingCategoryIds.stream()
+                    .filter(categoryId -> !newCategoryIds.contains(categoryId))
+                    .forEach(categoryId -> {
+                        StoreCategory storeCategory = storeCategoryRepository.findByStoreIdAndCategoryId(storeId, categoryId)
+                                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                        storeCategoryRepository.delete(storeCategory);
+                    });
 
-        // 새로운 카테고리 추가
-        newCategoryIds.stream()
-                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
-                .forEach(categoryId -> {
-                    // 카테고리 검증: ID로 Category 찾기
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
-                    storeCategoryRepository.save(StoreCategory.of(store, category)); // StoreCategory 객체 생성 및 저장
-                });
+            // 새로운 카테고리 추가
+            newCategoryIds.stream()
+                    .filter(categoryId -> !existingCategoryIds.contains(categoryId))
+                    .forEach(categoryId -> {
+                        Category category = categoryRepository.findById(categoryId)
+                                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                        storeCategoryRepository.save(StoreCategory.of(store, category));
+                    });
+        }
 
-        // StoreUpdateResponseDto 객체 생성
+        // 응답 DTO 생성
         StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(
                 store.getId(),
                 store.getName(),
-                newCategoryIds,
+                store.getStoreCategories().stream()
+                        .map(sc -> sc.getCategory().getId())
+                        .toList(), // 요청이 없으면 기존 카테고리 유지
                 store.getAddress(),
                 store.getTel(),
                 store.getStart_time(),
                 store.getEnd_time()
         );
 
-        // 성공적인 응답 반환
         return ApiResponseDto.success(responseDto);
     }
-
-
 
     @Transactional
     public ApiResponseDto deleteStore(UserDetailsImpl userDetails, UUID storeId) {
@@ -283,6 +282,5 @@ public class StoreService {
         // ApiResponseDto로 응답 반환
         return ApiResponseDto.success(responseDtoPage);
     }
-
 
 }
