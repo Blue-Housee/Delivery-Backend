@@ -5,6 +5,7 @@ import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddress
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressResponseDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.DeliveryAddress;
+import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.DeliveryAddressRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -59,7 +61,6 @@ public class DeliveryAddressService {
     public DeliveryAddressMessageRequestDto updateDeliveryAddress(UUID id,
                                                             DeliveryAddressUpdateRequestDto dto,
                                                             UserDetailsImpl userDetails) {
-
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(id).orElseThrow(
                 () -> new NoSuchElementException("해당되는 배송지가 없습니다."));
 
@@ -83,6 +84,28 @@ public class DeliveryAddressService {
 
         return DeliveryAddressMessageRequestDto.builder()
                 .message("배송지가 수정되었습니다.").build();
+    }
+
+    public List<DeliveryAddressResponseDto> selectAllDeliveryAddress(UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+
+        List<DeliveryAddress> deliveryAddress = deliveryAddressRepository.findByUser_Id(user.getId());
+
+        Role currentUserRole = userDetails.getUser().getRole();
+
+        //권한이 CUSTOMER이 아니면 에러
+        if(currentUserRole != Role.CUSTOMER){
+            log.warn("권한 정보가 다릅니다. : {}", user.getRole().getAuthority());
+            throw new IllegalArgumentException("존재하지 않는 권한입니다.");
+        }
+
+        return deliveryAddress.stream()
+                .map(delivery -> DeliveryAddressResponseDto.builder()
+                            .id(delivery.getId())
+                            .address(delivery.getAddress())
+                            .request(delivery.getRequest())
+                            .build())
+                .collect(Collectors.toList());
     }
 
     public DeliveryAddressResponseDto selectDeliveryAddress(UUID id, UserDetailsImpl userDetails) {

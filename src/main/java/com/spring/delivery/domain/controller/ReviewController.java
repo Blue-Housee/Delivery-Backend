@@ -8,6 +8,8 @@ import com.spring.delivery.domain.service.ReviewService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 
 import jakarta.validation.Valid;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +18,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ReviewController {
 
     private final ReviewService reviewService;
-
-    public ReviewController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
 
     //리뷰 단건 검색
     @GetMapping("/reviews/{reviewId}")
@@ -63,7 +62,6 @@ public class ReviewController {
 
         return ResponseEntity.ok(apiResponseDto);
     }
-
 
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponseDto> deleteReview (@PathVariable UUID reviewId,

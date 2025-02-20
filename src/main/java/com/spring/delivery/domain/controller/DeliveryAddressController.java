@@ -5,8 +5,11 @@ import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddress
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
 import com.spring.delivery.domain.service.DeliveryAddressService;
 import com.spring.delivery.global.security.UserDetailsImpl;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +50,13 @@ public class DeliveryAddressController {
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.selectDeliveryAddress(id, userDetails));
+
+        return ResponseEntity.ok(apiResponseDto);
+    }
+
+    @GetMapping("/address")
+    public ResponseEntity<ApiResponseDto> selectAllDeliveryAddress(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        ApiResponseDto apiResponseDto = ApiResponseDto.success(deliveryAddressService.selectAllDeliveryAddress( userDetails));
 
         return ResponseEntity.ok(apiResponseDto);
     }
