@@ -12,21 +12,21 @@ public class StoreListResponseDto {
     private String name; // 가게 이름
     private String address; // 가게 주소
     private String tel; // 전화번호
-    private boolean open_status; // 운영 상태
+    private boolean openStatus; // 운영 상태
     private List<String> categories; // 카테고리 리스트
-    private LocalTime start_time;
-    private LocalTime end_time;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     public StoreListResponseDto(UUID storeId, String name, String address, String tel,
-                                boolean open_status, List<String> categories,
-                                LocalTime start_time, LocalTime end_time) {
+                                boolean openStatus, List<String> categories,
+                                LocalTime startTime, LocalTime endTime) {
         this.storeId = storeId;
         this.name = name;
         this.address = address;
         this.tel = tel;
-        this.open_status = open_status;
+        this.openStatus = openStatus;
         this.categories = categories;
-        this.start_time = start_time;
-        this.end_time = end_time;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 }

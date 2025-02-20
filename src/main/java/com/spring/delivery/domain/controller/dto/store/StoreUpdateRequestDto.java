@@ -14,7 +14,7 @@ public class StoreUpdateRequestDto {
     private List<UUID> categoryIds;
     private String address;
     private String tel;
-    private boolean open_status;
-    private LocalTime start_time;
-    private LocalTime end_time;
+    private boolean openStatus;
+    private LocalTime startTime;
+    private LocalTime endTime;
 }

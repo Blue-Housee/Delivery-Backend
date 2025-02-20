@@ -59,9 +59,9 @@ public class StoreService {
                 requestDto.getName(),
                 requestDto.getAddress(),
                 requestDto.getTel(),
-                requestDto.isOpen_status(),
-                requestDto.getStart_time(),
-                requestDto.getEnd_time(),
+                requestDto.isOpenStatus(),
+                requestDto.getStartTime(),
+                requestDto.getEndTime(),
                 user // User 객체
         );
 
@@ -105,10 +105,10 @@ public class StoreService {
                     store.getName(),
                     store.getAddress(),
                     store.getTel(),
-                    store.isOpen_status(),
+                    store.isOpenStatus(),
                     categories,
-                    store.getStart_time(),
-                    store.getEnd_time()
+                    store.getStartTime(),
+                    store.getEndTime()
             );
         });
 
@@ -130,9 +130,9 @@ public class StoreService {
                 store.getName(),
                 store.getAddress(),
                 store.getTel(),
-                store.isOpen_status(),
-                store.getStart_time(), // 시작 시간
-                store.getEnd_time(),   // 종료 시간
+                store.isOpenStatus(),
+                store.getStartTime(), // 시작 시간
+                store.getEndTime(),   // 종료 시간
                 categories
         );
 
@@ -154,15 +154,8 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
 
-        // 가게 정보 수정 (null 체크 후 변경)
-        store.update(
-                requestDto.getName() != null ? requestDto.getName() : store.getName(),
-                requestDto.getAddress() != null ? requestDto.getAddress() : store.getAddress(),
-                requestDto.getTel() != null ? requestDto.getTel() : store.getTel(),
-                requestDto.isOpen_status(),
-                requestDto.getStart_time() != null ? requestDto.getStart_time() : store.getStart_time(),
-                requestDto.getEnd_time() != null ? requestDto.getEnd_time() : store.getEnd_time()
-        );
+        // 가게 정보 수정
+        store.update(requestDto);
 
         // 요청에서 categoryIds가 있을 때만 변경
         if (requestDto.getCategoryIds() != null) {
@@ -200,8 +193,8 @@ public class StoreService {
                         .toList(), // 요청이 없으면 기존 카테고리 유지
                 store.getAddress(),
                 store.getTel(),
-                store.getStart_time(),
-                store.getEnd_time()
+                store.getStartTime(),
+                store.getEndTime()
         );
 
         return ApiResponseDto.success(responseDto);
@@ -272,10 +265,10 @@ public class StoreService {
                     store.getName(),
                     store.getAddress(),
                     store.getTel(),
-                    store.isOpen_status(),
+                    store.isOpenStatus(),
                     categories,
-                    store.getStart_time(),
-                    store.getEnd_time()
+                    store.getStartTime(),
+                    store.getEndTime()
             );
         });
 

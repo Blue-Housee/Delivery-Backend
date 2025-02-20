@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.domain.entity;
 
+import com.spring.delivery.domain.controller.dto.store.StoreUpdateRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,11 +27,11 @@ public class Store extends BaseEntity {
 
     private String tel;
 
-    private boolean open_status;
+    private boolean openStatus;
 
-    private LocalTime start_time;
+    private LocalTime startTime;
 
-    private LocalTime end_time;
+    private LocalTime endTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -51,9 +52,9 @@ public class Store extends BaseEntity {
         this.name = name;
         this.address = address;
         this.tel = tel;
-        this.open_status = openStatus;
-        this.start_time = startTime;
-        this.end_time = endTime;
+        this.openStatus = openStatus;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.user = user;
     }
 
@@ -63,13 +64,12 @@ public class Store extends BaseEntity {
         return new Store(name, address, tel, openStatus, startTime, endTime, user);
     }
 
-    public void update(String name, String address, String tel, boolean openStatus,
-                       LocalTime startTime, LocalTime endTime) {
-        this.name = name;
-        this.address = address;
-        this.tel = tel;
-        this.open_status = openStatus;
-        this.start_time = startTime;
-        this.end_time = endTime;
+    public void update(StoreUpdateRequestDto requestDto) {
+        this.name = requestDto.getName() != null ? requestDto.getName() : this.name;
+        this.address = requestDto.getAddress() != null ? requestDto.getAddress() : this.address;
+        this.tel = requestDto.getTel() != null ? requestDto.getTel() : this.tel;
+        this.openStatus = requestDto.isOpenStatus();  // open_status는 null 체크가 필요 없음
+        this.startTime = requestDto.getStartTime() != null ? requestDto.getStartTime() : this.startTime;
+        this.endTime = requestDto.getEndTime() != null ? requestDto.getEndTime() : this.endTime;
     }
 }
