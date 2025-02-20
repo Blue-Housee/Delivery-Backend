@@ -154,15 +154,8 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
 
-        // 가게 정보 수정 (null 체크 후 변경)
-        store.update(
-                requestDto.getName() != null ? requestDto.getName() : store.getName(),
-                requestDto.getAddress() != null ? requestDto.getAddress() : store.getAddress(),
-                requestDto.getTel() != null ? requestDto.getTel() : store.getTel(),
-                requestDto.isOpen_status(),
-                requestDto.getStart_time() != null ? requestDto.getStart_time() : store.getStart_time(),
-                requestDto.getEnd_time() != null ? requestDto.getEnd_time() : store.getEnd_time()
-        );
+        // 가게 정보 수정
+        store.update(requestDto);
 
         // 요청에서 categoryIds가 있을 때만 변경
         if (requestDto.getCategoryIds() != null) {
