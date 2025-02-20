@@ -56,13 +56,13 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER", "ROLE_OWNER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.");
         }
 
         // store entity check
         Store store =  storeRepository.findById(storeId).orElse(null);
         if (store == null) {
-            return ApiResponseDto.fail(404, "해당 가게 정보를 찾을 수 없습니다.", null);
+            return ApiResponseDto.fail(404, "해당 가게 정보를 찾을 수 없습니다.");
         }
 
         // 요청 데이터 생성
@@ -120,7 +120,7 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "삭제할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "삭제할 권한이 없습니다.");
         }
 
         Gemini gemini = geminiRepository.findById(geminiId)
@@ -139,7 +139,7 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.");
         }
 
         Gemini gemini = geminiRepository.findById(geminiId)
@@ -156,7 +156,7 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.");
         }
 
         // 정렬 방향 설정 (desc or asc)
@@ -185,7 +185,7 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.", null);
+            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.");
         }
 
         // 정렬 방향 설정 (desc or asc)
