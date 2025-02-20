@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Log4j2
@@ -74,6 +75,21 @@ public class OrderController {
     ){
         ApiResponseDto<OrderMenuResponseDto> orderResponseDto = orderService.getOrder(id);
         return ResponseEntity.ok(orderResponseDto);
+    }
+
+
+    @GetMapping("/")
+    public ResponseEntity<ApiResponseDto<List<OrderMenuResponseDto>>> getOrders(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long userId,
+            @RequestParam String orderStatus,
+            @RequestParam String sort,
+            @RequestParam String order,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "30") int size
+    ){
+        ApiResponseDto<List<OrderMenuResponseDto>> responseDto = orderService.getOrders(userId, orderStatus, sort, order, page, size, userDetails);
+        return ResponseEntity.ok(responseDto);
     }
 
 }
