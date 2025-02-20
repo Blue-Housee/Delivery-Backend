@@ -2,8 +2,8 @@ package com.spring.delivery.domain.controller;
 
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.order.MenuRequestDto;
-import com.spring.delivery.domain.controller.dto.order.MenuResponseDto;
+import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
+import com.spring.delivery.domain.controller.dto.menu.MenuResponseDto;
 import com.spring.delivery.domain.service.MenuService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;

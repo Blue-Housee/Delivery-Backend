@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.controller.dto.order;
+package com.spring.delivery.domain.controller.dto.menu;
 
 import com.spring.delivery.domain.domain.entity.Menu;
 import lombok.Getter;
