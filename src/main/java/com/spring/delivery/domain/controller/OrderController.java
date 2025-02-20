@@ -77,7 +77,7 @@ public class OrderController {
         return ResponseEntity.ok(orderResponseDto);
     }
 
-
+    // 주문 검색기능
     @GetMapping("/")
     public ResponseEntity<ApiResponseDto<List<OrderMenuResponseDto>>> getOrders(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

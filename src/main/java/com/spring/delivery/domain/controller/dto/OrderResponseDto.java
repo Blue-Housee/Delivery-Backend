@@ -21,6 +21,7 @@ public class OrderResponseDto {
     private UUID orderId;
     private Long userId;
     private String orderStatus;
+    private String address;
     private String orderType;
     private LocalDateTime createdAt;
     private String createdBy;
@@ -32,6 +33,7 @@ public class OrderResponseDto {
         this.orderId = order.getId();
         this.userId = order.getUser().getId();
         this.orderStatus = order.getOrder_status();
+        this.address = order.getAddress();
         this.createdAt = order.getCreatedAt();
         this.createdBy = order.getCreatedBy();
         this.orderType = order.getOrder_type();
