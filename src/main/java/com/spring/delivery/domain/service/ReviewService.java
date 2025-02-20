@@ -9,10 +9,12 @@ import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.ReviewRepository;
 
+import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,26 +24,27 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    //리뷰 생성 기능 (수정 필요)
-    public ReviewResponseDto createReview(UUID storeId, ReviewRequestDto dto, UserDetailsImpl userDetails) {
+    private final StoreRepository storeRepository;
 
-        //storeid, orderid를 존재하는지 확인 필요
-        //추후에 받아와서 해당 에러 핸들링 처리.
-        //수정 필요
+    public ReviewResponseDto createReview(UUID storeId, ReviewRequestDto dto, UserDetailsImpl userDetails) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new NoSuchElementException("해당되는 상점이 없습니다"));
+
         Order order = null;
-        Store store =null;
 
         User user = userDetails.getUser();
         Role currentUserRole = userDetails.getUser().getRole();
 
         // CUSTOM만 접근 가능
         if (!currentUserRole.equals(Role.CUSTOMER)) {
+            log.warn("권한이 없습니다 : {}", currentUserRole.getAuthority());
+
             throw new IllegalArgumentException("권한이 없습니다");
         }
 
@@ -52,7 +55,8 @@ public class ReviewService {
                         .order(order)
                         .store(store)
                         .user(user)
-                        .build());
+                        .build()
+        );
 
         return ReviewResponseDto.builder()
                 .id(review.getId())
@@ -64,10 +68,13 @@ public class ReviewService {
 
     //리뷰 단건 검색 기능
     public ReviewDetailsResponseDto getReviewDetails(UUID reviewId)  {
-
         Review review = reviewRepository.findById(reviewId).orElseThrow(
                 () -> new NoSuchElementException("해당되는 리뷰가 없습니다.")
         );
+
+        if(review.getDeletedBy() != null){
+            throw new NoSuchElementException("삭제된 리뷰입니다.");
+        }
 
         return ReviewDetailsResponseDto.builder()
                 .id(review.getId())
@@ -82,16 +89,13 @@ public class ReviewService {
                 .build();
     }
 
-    //상점의 리뷰들 전체 검색 기능(수정 필요)
+    //상점의 리뷰들 전체 검색 기능
     public ReviewStoreResponseDto getStoreReview(UUID storeId, int page, int size) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new NoSuchElementException("해당되는 상점이 없습니다"));
 
-        /*
-        store에 대한 에러 핸들링 추가
-        */
-        //상의 후 sort 추가
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Review> storeReview = reviewRepository.findByStore_Id(storeId, pageable);
+        Page<Review> storeReview = reviewRepository.findByReview(store.getId(), pageable);
 
         return ReviewStoreResponseDto.builder()
                 //페이지네이션 정보
@@ -125,6 +129,8 @@ public class ReviewService {
         if(!review.getUser().getId().equals(userDetails.getUser().getId()) ||
                 !currentUserRole.equals(Role.CUSTOMER)
         ){
+            log.warn("계정 정보가 다릅니다. : {}", review.getUser().getId());
+            log.warn("권한이 없습니다 : {}", currentUserRole.getAuthority());
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
         }
 
@@ -152,11 +158,14 @@ public class ReviewService {
                         // 관리자인 경우: 아이디 비교 없이 허용.
                         || currentUserRole.equals(Role.MASTER)
         )) {
+            log.warn("계정 정보가 다릅니다. : {}", review.getUser().getId());
+            log.warn("권한이 없습니다 : {}", currentUserRole.getAuthority());
             throw new IllegalArgumentException("계정 정보가 다르거나 존재하지 않는 권한입니다.");
         }
 
         //삭제된 정보가 있으면 에러 발생
         if(review.getDeletedBy() != null){
+            log.warn("이미 삭제된 리뷰입니다. : {}", review.getDeletedBy());
             throw new NoSuchElementException("이미 삭제된 리뷰입니다.");
         }
 
@@ -166,5 +175,11 @@ public class ReviewService {
                 .message("리뷰가 삭제(숨김 처리)되었습니다.")
                 .delete_at(review.getDeletedAt())
                 .build();
+    }
+
+    //상점의 평점 평균 계산
+    public Double selectStoreAverageRating(UUID storeId){
+        Double averageRating = Math.round(reviewRepository.findByStoreAverageRating(storeId ) * 10.0) / 10.0;
+        return averageRating;
     }
 }
