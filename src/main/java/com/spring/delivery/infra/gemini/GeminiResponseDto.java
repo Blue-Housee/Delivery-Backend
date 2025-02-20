@@ -29,13 +29,14 @@ public class GeminiResponseDto {
     }
 
     public static GeminiResponseDto from(Gemini gemini) {
-        return new GeminiResponseDto(
-                gemini.getId(),
-                gemini.getRequestText(),
-                gemini.getResponseText(),
-                gemini.getStore().getId(),
-                gemini.getCreatedAt(),
-                gemini.getCreatedBy()
-        );
+          return GeminiResponseDto.builder()
+                  .id(gemini.getId())
+                  .requestText(gemini.getRequestText())
+                  .responseText(gemini.getResponseText())
+                  .storeId(gemini.getStore().getId())
+                  .createdAt(gemini.getCreatedAt())
+                  .createdBy(gemini.getCreatedBy())
+                  .build();
+
     }
 }
