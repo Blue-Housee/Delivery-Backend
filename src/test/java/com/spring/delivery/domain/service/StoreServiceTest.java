@@ -1,9 +1,7 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
-import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
+import com.spring.delivery.domain.controller.dto.store.*;
 import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
@@ -144,7 +142,6 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 조회 - 전체 목록")
     void testGetAllStores() {
-        // 가게 등록 테스트를 통해 가게를 생성합니다.
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
                 .name("테스트 가게 1")
                 .categoryIds(List.of(testCategoryId))
@@ -192,7 +189,6 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 조회 - 특정 가게 ID로 조회")
     void testGetStoreById() {
-        // 가게 등록 테스트를 통해 가게를 생성합니다.
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
                 .name("테스트 가게 3")
                 .categoryIds(List.of(testCategoryId))
@@ -220,6 +216,88 @@ class StoreServiceTest {
         assertEquals("테스트 주소 3", storeDetail.getAddress());
         assertEquals("010-5555-6666", storeDetail.getTel());
         assertTrue(storeDetail.isOpenStatus());
+    }
+
+    @Test
+    @Order(5)
+    @Transactional
+    @DisplayName("가게 수정 - 권한 있음")
+    void testUpdateStoreSuccess() {
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 4")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 4")
+                .tel("010-7777-8888")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
+        UUID storeId = (UUID) createResponse.getData();
+
+        // 수정할 요청 DTO 생성
+        StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
+                .name("수정된 가게 이름")
+                .categoryIds(List.of(testCategoryId)) // 카테고리는 유지
+                .address("수정된 주소")
+                .tel("010-9999-0000")
+                .startTime(LocalTime.of(10, 0)) // 수정된 시작 시간
+                .endTime(LocalTime.of(21, 0))   // 수정된 종료 시간
+                .build();
+
+        // 가게 수정 메서드 호출
+        ApiResponseDto<StoreUpdateResponseDto> response = storeService.updateStore(masterUserDetails, storeId, updateRequest);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertNotNull(response.getData());
+
+        StoreUpdateResponseDto updatedStore = response.getData();
+        assertEquals(storeId, updatedStore.getId());
+        assertEquals("수정된 가게 이름", updatedStore.getName());
+        assertEquals("수정된 주소", updatedStore.getAddress());
+        assertEquals("010-9999-0000", updatedStore.getTel());
+        assertEquals(LocalTime.of(10, 0), updatedStore.getStartTime());
+        assertEquals(LocalTime.of(21, 0), updatedStore.getEndTime());
+    }
+
+    @Test
+    @Order(6)
+    @Transactional
+    @DisplayName("가게 수정 - 권한 없음")
+    void testUpdateStoreFailDueToInsufficientPermissions() {
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 5")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 5")
+                .tel("010-4444-5555")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
+        UUID storeId = createResponse.getData(); // UUID를 직접 가져옴
+
+        // 수정할 요청 DTO 생성
+        StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
+                .name("수정된 가게 이름")
+                .categoryIds(List.of(testCategoryId))
+                .address("수정된 주소")
+                .tel("010-9999-0000")
+                .startTime(LocalTime.of(10, 0))
+                .endTime(LocalTime.of(21, 0))
+                .build();
+
+        // 권한이 없는 유저로 가게 수정 메서드 호출
+        ApiResponseDto response = storeService.updateStore(customerUserDetails, storeId, updateRequest);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(403, response.getStatus());
+        assertEquals("가게를 수정할 권한이 없습니다.", response.getMessage());
     }
 
 
