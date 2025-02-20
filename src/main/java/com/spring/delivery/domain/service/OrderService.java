@@ -1,8 +1,6 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.OrderRequestDto;
-import com.spring.delivery.domain.controller.dto.OrderResponseDto;
+import com.spring.delivery.domain.controller.dto.*;
 import com.spring.delivery.domain.domain.entity.Menu;
 import com.spring.delivery.domain.domain.entity.MenuOrder;
 import com.spring.delivery.domain.domain.entity.Order;
@@ -15,10 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -116,5 +111,29 @@ public class OrderService {
         order.delete(userDetails.getUser().getUsername());
 
         return ApiResponseDto.success(null);
+    }
+
+    public ApiResponseDto<OrderMenuResponseDto> getOrder(UUID id) {
+        // 들어온 주문 id가 주문 DB에 있는지 확인
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            return ApiResponseDto.fail(404, "해당 주문은 존재하지 않습니다.");
+        }
+
+        // 들어온 주문의 메뉴들들 db 에서 가져옴
+        // 주문정보와, 메뉴 아이디들을 가져온다
+        List<UUID> menuOrder = menuOrderRepository.findByOrderId(id).stream()
+                .map(MenuOrder::getId)
+                .toList();
+
+        List<Menu> menus = new ArrayList<>();
+        // 메뉴아이디들로 메뉴정보 조회를 한다.
+        menuOrder.forEach(orderMenuId -> {
+            Menu menu = menuRepository.findById(orderMenuId).orElse(null);
+            menus.add(menu);
+        });
+
+        // 주문정보 + 메뉴정보들을 합쳐서 보내준다.
+        return ApiResponseDto.success(OrderMenuResponseDto.from(order, menus));
     }
 }
