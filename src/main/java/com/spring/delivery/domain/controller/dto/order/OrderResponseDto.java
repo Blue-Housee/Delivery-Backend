@@ -24,19 +24,17 @@ public class OrderResponseDto {
     private LocalDateTime createdAt;
     private String createdBy;
     private Long totalPrice;
-    private Payment paymentId;
     private List<MenuOrder> menuOrders;
 
     public OrderResponseDto(Order order) {
         this.orderId = order.getId();
         this.userId = order.getUser().getId();
-        this.orderStatus = order.getOrder_status();
+        this.orderStatus = order.getOrderStatus();
         this.address = order.getAddress();
         this.createdAt = order.getCreatedAt();
         this.createdBy = order.getCreatedBy();
-        this.orderType = order.getOrder_type();
-        this.totalPrice = order.getTotal_price();
-        this.paymentId = order.getPayment();
+        this.orderType = order.getOrderType();
+        this.totalPrice = order.getTotalPrice();
     }
 
     public static OrderResponseDto from(Order order) {
