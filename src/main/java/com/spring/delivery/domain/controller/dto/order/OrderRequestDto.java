@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.order;
 
 import com.spring.delivery.domain.domain.entity.Payment;
 import com.spring.delivery.domain.domain.entity.User;
@@ -32,4 +32,7 @@ public class OrderRequestDto {
 
     // 배송지
     private String address;
+
+    // 카드번호
+    private String cardNumber;
 }

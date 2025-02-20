@@ -1,12 +1,17 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.*;
+import com.spring.delivery.domain.controller.dto.order.OrderMenuResponseDto;
+import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
+import com.spring.delivery.domain.controller.dto.order.OrderResponseDto;
 import com.spring.delivery.domain.domain.entity.Menu;
 import com.spring.delivery.domain.domain.entity.MenuOrder;
 import com.spring.delivery.domain.domain.entity.Order;
+import com.spring.delivery.domain.domain.entity.Payment;
 import com.spring.delivery.domain.domain.repository.MenuOrderRepository;
 import com.spring.delivery.domain.domain.repository.MenuRepository;
 import com.spring.delivery.domain.domain.repository.OrderRepository;
+import com.spring.delivery.domain.domain.repository.PaymentRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +32,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MenuOrderRepository menuOrderRepository;
     private final MenuRepository menuRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional
     public ApiResponseDto<OrderResponseDto> createOrder(OrderRequestDto orderRequestDto) {
@@ -49,6 +55,10 @@ public class OrderService {
                 menuOrderRepository.save(menuOrder);
             }
         }
+
+        // paymentData 도 함께 받아와서 저장하자! -> order 객체, 총가격, 카드번호
+        Payment payment = Payment.createPayment(order, orderRequestDto.getCardNumber());
+        paymentRepository.save(payment);
 
         // 새로운 주문생성 성공 반환 데이터 return
         return ApiResponseDto.success(OrderResponseDto.from(order));

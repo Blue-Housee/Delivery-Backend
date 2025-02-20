@@ -1,6 +1,5 @@
 package com.spring.delivery.domain.domain.entity;
 
-import com.spring.delivery.domain.controller.dto.OrderRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Entity

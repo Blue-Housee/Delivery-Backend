@@ -1,10 +1,9 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.OrderMenuResponseDto;
-import com.spring.delivery.domain.controller.dto.OrderRequestDto;
-import com.spring.delivery.domain.controller.dto.OrderResponseDto;
-import com.spring.delivery.domain.domain.entity.Order;
+import com.spring.delivery.domain.controller.dto.order.OrderMenuResponseDto;
+import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
+import com.spring.delivery.domain.controller.dto.order.OrderResponseDto;
 import com.spring.delivery.domain.service.OrderService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
