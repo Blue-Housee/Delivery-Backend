@@ -1,17 +1,15 @@
 package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
+import com.spring.delivery.domain.controller.dto.store.*;
+import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
 import com.spring.delivery.domain.domain.entity.User;
-import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.repository.CategoryRepository;
+import com.spring.delivery.domain.domain.repository.StoreCategoryRepository;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
-import com.spring.delivery.domain.domain.repository.StoreCategoryRepository; // 추가
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,15 +40,15 @@ public class StoreService {
         this.categoryRepository = categoryRepository;
     }
 
-    public ApiResponseDto createStore(UserDetailsImpl userDetails, StoreRequestDto requestDto) {
+    public ApiResponseDto createStore(UserDetailsImpl userDetails, StoreCreateRequestDto requestDto) {
         // User 객체를 가져오는 로직
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        // 권한 확인 (OWNER, MASTER만 가능)
+        // 권한 확인 (MASTER만 가능)
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         boolean isOwnerOrMaster = authorities.stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER") || auth.getAuthority().equals("ROLE_MASTER"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_MASTER"));
 
         if (!isOwnerOrMaster) {
             return ApiResponseDto.fail(403, "가게를 등록할 권한이 없습니다.");
@@ -107,10 +105,10 @@ public class StoreService {
                     store.getName(),
                     store.getAddress(),
                     store.getTel(),
-                    store.isOpen_status(),
+                    store.isOpenStatus(),
                     categories,
-                    store.getCreatedAt(),
-                    store.getUpdatedAt()
+                    store.getStartTime(),
+                    store.getEndTime()
             );
         });
 
@@ -132,9 +130,9 @@ public class StoreService {
                 store.getName(),
                 store.getAddress(),
                 store.getTel(),
-                store.isOpen_status(),
-                store.getStart_time(), // 시작 시간
-                store.getEnd_time(),   // 종료 시간
+                store.isOpenStatus(),
+                store.getStartTime(), // 시작 시간
+                store.getEndTime(),   // 종료 시간
                 categories
         );
 
@@ -142,7 +140,7 @@ public class StoreService {
     }
 
     @Transactional
-    public ApiResponseDto updateStore(UserDetailsImpl userDetails, UUID storeId, StoreRequestDto requestDto) {
+    public ApiResponseDto updateStore(UserDetailsImpl userDetails, UUID storeId, StoreUpdateRequestDto requestDto) {
         // 권한 확인 (OWNER, MASTER만 가능)
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         boolean isOwnerOrMaster = authorities.stream()
@@ -157,46 +155,50 @@ public class StoreService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가게 ID입니다."));
 
         // 가게 정보 수정
-        store.update(
-                requestDto.getName(),
-                requestDto.getAddress(),
-                requestDto.getTel(),
-                requestDto.isOpenStatus(),
-                requestDto.getStartTime(),
-                requestDto.getEndTime()
+        store.update(requestDto);
+
+        // 요청에서 categoryIds가 있을 때만 변경
+        if (requestDto.getCategoryIds() != null) {
+            List<UUID> existingCategoryIds = store.getStoreCategories().stream()
+                    .map(storeCategory -> storeCategory.getCategory().getId())
+                    .toList();
+
+            List<UUID> newCategoryIds = requestDto.getCategoryIds();
+
+            // 기존 카테고리 삭제 (요청에 없는 카테고리)
+            existingCategoryIds.stream()
+                    .filter(categoryId -> !newCategoryIds.contains(categoryId))
+                    .forEach(categoryId -> {
+                        StoreCategory storeCategory = storeCategoryRepository.findByStoreIdAndCategoryId(storeId, categoryId)
+                                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                        storeCategoryRepository.delete(storeCategory);
+                    });
+
+            // 새로운 카테고리 추가
+            newCategoryIds.stream()
+                    .filter(categoryId -> !existingCategoryIds.contains(categoryId))
+                    .forEach(categoryId -> {
+                        Category category = categoryRepository.findById(categoryId)
+                                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
+                        storeCategoryRepository.save(StoreCategory.of(store, category));
+                    });
+        }
+
+        // 응답 DTO 생성
+        StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(
+                store.getId(),
+                store.getName(),
+                store.getStoreCategories().stream()
+                        .map(sc -> sc.getCategory().getId())
+                        .toList(), // 요청이 없으면 기존 카테고리 유지
+                store.getAddress(),
+                store.getTel(),
+                store.getStartTime(),
+                store.getEndTime()
         );
 
-        // 기존 카테고리 ID 목록
-        List<UUID> existingCategoryIds = store.getStoreCategories().stream()
-                .map(storeCategory -> storeCategory.getCategory().getId())
-                .toList();
-
-        // 새로운 카테고리 ID 목록
-        List<UUID> newCategoryIds = requestDto.getCategoryIds();
-
-        // 기존 카테고리 삭제 (요청에 없는 카테고리)
-        existingCategoryIds.stream()
-                .filter(categoryId -> !newCategoryIds.contains(categoryId))
-                .forEach(categoryId -> {
-                    StoreCategory storeCategory = storeCategoryRepository.findByStoreIdAndCategoryId(storeId, categoryId)
-                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
-                    storeCategoryRepository.delete(storeCategory);
-                });
-
-        // 새로운 카테고리 추가
-        newCategoryIds.stream()
-                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
-                .forEach(categoryId -> {
-                    // 카테고리 검증: ID로 Category 찾기
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID: " + categoryId));
-                    storeCategoryRepository.save(StoreCategory.of(store, category)); // StoreCategory 객체 생성 및 저장
-                });
-
-        // 성공적인 응답 반환
-        return ApiResponseDto.success(store.getId());
+        return ApiResponseDto.success(responseDto);
     }
-
 
     @Transactional
     public ApiResponseDto deleteStore(UserDetailsImpl userDetails, UUID storeId) {
@@ -263,16 +265,15 @@ public class StoreService {
                     store.getName(),
                     store.getAddress(),
                     store.getTel(),
-                    store.isOpen_status(),
+                    store.isOpenStatus(),
                     categories,
-                    store.getCreatedAt(),
-                    store.getUpdatedAt()
+                    store.getStartTime(),
+                    store.getEndTime()
             );
         });
 
         // ApiResponseDto로 응답 반환
         return ApiResponseDto.success(responseDtoPage);
     }
-
 
 }
