@@ -3,19 +3,19 @@ package com.spring.delivery.domain.controller.dto;
 import com.spring.delivery.domain.domain.entity.MenuOrder;
 import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.domain.entity.Payment;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderResponseDto {
 
     private UUID orderId;
@@ -37,10 +37,10 @@ public class OrderResponseDto {
         this.orderType = order.getOrder_type();
         this.totalPrice = order.getTotal_price();
         this.paymentId = order.getPayment();
-        this.menuOrders = new ArrayList<>();
     }
 
     public static OrderResponseDto from(Order order) {
         return new OrderResponseDto(order);
     }
+
 }

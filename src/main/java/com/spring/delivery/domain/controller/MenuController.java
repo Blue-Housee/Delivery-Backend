@@ -25,7 +25,6 @@ public class MenuController {
 
     private final MenuService menuService;
 
-
     @GetMapping("test1")
     public ResponseEntity<String> checkApi(Authentication authentication) {
         System.out.println("메뉴 API 테스트 엔드포인트 실행됨!");

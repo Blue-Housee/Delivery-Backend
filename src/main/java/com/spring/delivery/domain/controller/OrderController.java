@@ -1,15 +1,16 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.OrderMenuResponseDto;
 import com.spring.delivery.domain.controller.dto.OrderRequestDto;
 import com.spring.delivery.domain.controller.dto.OrderResponseDto;
+import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.service.OrderService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -64,6 +65,15 @@ public class OrderController {
     ){
         ApiResponseDto<OrderResponseDto> orderResponseDto = orderService.deleteOrder(id, userDetails);
         return ResponseEntity.status(orderResponseDto.getStatus()).body(orderResponseDto);
+    }
+
+    // 주문조회 api (단품)
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<OrderMenuResponseDto>> getOrder(
+            @PathVariable UUID id
+    ){
+        ApiResponseDto<OrderMenuResponseDto> orderResponseDto = orderService.getOrder(id);
+        return ResponseEntity.ok(orderResponseDto);
     }
 
 }
