@@ -29,4 +29,7 @@ public class OrderRequestDto {
 
     // 수정용 메뉴 id
     private List<Map<UUID, Long>> updateMenuIds;
+
+    // 배송지
+    private String address;
 }

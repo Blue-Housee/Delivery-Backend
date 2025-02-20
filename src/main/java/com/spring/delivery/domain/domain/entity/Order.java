@@ -32,14 +32,17 @@ public class Order extends BaseEntity {
 
     private Long total_price;
 
+    private String address;
+
     @OneToOne(mappedBy = "order")
     private Payment payment;
 
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    private Order(User userId, String order_type, Long total_price, Payment payment) {
+    private Order(User userId, String address ,String order_type, Long total_price, Payment payment) {
         this.user = userId;
+        this.address = address;
         this.order_type = order_type;
         this.total_price = total_price;
         this.payment = payment;
@@ -49,6 +52,7 @@ public class Order extends BaseEntity {
         return new Order(
                 orderRequestDto.getUserId(),
                 orderRequestDto.getOrderType(),
+                orderRequestDto.getAddress(),
                 orderRequestDto.getTotalPrice(),
                 orderRequestDto.getPaymentId()
         );
@@ -59,6 +63,7 @@ public class Order extends BaseEntity {
         if (orderRequestDto.getTotalPrice() != null) { order.total_price = orderRequestDto.getTotalPrice(); }
         if (orderRequestDto.getUserId() != null){ order.user = orderRequestDto.getUserId(); }
         if (orderRequestDto.getOrderType() != null){ order.order_type = orderRequestDto.getOrderType(); }
+        if (orderRequestDto.getAddress() != null){ order.address = orderRequestDto.getAddress(); }
     }
 
 
