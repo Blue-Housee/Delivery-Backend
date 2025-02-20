@@ -2,9 +2,11 @@ package com.spring.delivery.domain.controller.dto.user;
 
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class SignUpRequestDto {
     @NotBlank(message = "username은 필수 입력값입니다.")
     @Size(min = 4, max = 10)
