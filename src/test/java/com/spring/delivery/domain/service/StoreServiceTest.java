@@ -2,6 +2,7 @@ package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
+import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
 import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.entity.Store;
@@ -184,6 +185,41 @@ class StoreServiceTest {
         assertEquals("테스트 주소 1", firstStore.getAddress());
         assertEquals("010-1111-2222", firstStore.getTel());
         assertTrue(firstStore.isOpenStatus());
+    }
+
+    @Test
+    @Order(4)
+    @Transactional
+    @DisplayName("가게 조회 - 특정 가게 ID로 조회")
+    void testGetStoreById() {
+        // 가게 등록 테스트를 통해 가게를 생성합니다.
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 3")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 3")
+                .tel("010-5555-6666")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
+        UUID storeId = (UUID) createResponse.getData(); // 생성된 가게 ID
+
+        // 가게 ID로 조회 메서드 호출
+        ApiResponseDto<StoreDetailResponseDto> response = storeService.getStoreById(storeId);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertNotNull(response.getData());
+
+        StoreDetailResponseDto storeDetail = response.getData();
+        assertEquals(storeId, storeDetail.getStoreId());
+        assertEquals("테스트 가게 3", storeDetail.getName());
+        assertEquals("테스트 주소 3", storeDetail.getAddress());
+        assertEquals("010-5555-6666", storeDetail.getTel());
+        assertTrue(storeDetail.isOpenStatus());
     }
 
 
