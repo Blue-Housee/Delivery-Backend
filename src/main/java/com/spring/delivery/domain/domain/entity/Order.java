@@ -1,6 +1,6 @@
 package com.spring.delivery.domain.domain.entity;
 
-import com.spring.delivery.domain.controller.dto.OrderRequestDto;
+import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -34,18 +34,14 @@ public class Order extends BaseEntity {
 
     private String address;
 
-    @OneToOne(mappedBy = "order")
-    private Payment payment;
-
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    private Order(User userId, String address ,String order_type, Long total_price, Payment payment) {
+    private Order(User userId, String address ,String order_type, Long total_price) {
         this.user = userId;
         this.address = address;
         this.order_type = order_type;
         this.total_price = total_price;
-        this.payment = payment;
     }
 
     public static Order createOrder(OrderRequestDto orderRequestDto) {
@@ -53,19 +49,15 @@ public class Order extends BaseEntity {
                 orderRequestDto.getUserId(),
                 orderRequestDto.getOrderType(),
                 orderRequestDto.getAddress(),
-                orderRequestDto.getTotalPrice(),
-                orderRequestDto.getPaymentId()
+                orderRequestDto.getTotalPrice()
         );
     }
 
     public static void update(Order order, OrderRequestDto orderRequestDto) {
-        if (orderRequestDto.getPaymentId() != null) { order.payment = orderRequestDto.getPaymentId(); }
         if (orderRequestDto.getTotalPrice() != null) { order.total_price = orderRequestDto.getTotalPrice(); }
         if (orderRequestDto.getUserId() != null){ order.user = orderRequestDto.getUserId(); }
         if (orderRequestDto.getOrderType() != null){ order.order_type = orderRequestDto.getOrderType(); }
         if (orderRequestDto.getAddress() != null){ order.address = orderRequestDto.getAddress(); }
     }
-
-
 
 }

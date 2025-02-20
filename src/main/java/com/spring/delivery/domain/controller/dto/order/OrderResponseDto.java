@@ -1,4 +1,4 @@
-package com.spring.delivery.domain.controller.dto;
+package com.spring.delivery.domain.controller.dto.order;
 
 import com.spring.delivery.domain.domain.entity.MenuOrder;
 import com.spring.delivery.domain.domain.entity.Order;
@@ -6,10 +6,8 @@ import com.spring.delivery.domain.domain.entity.Payment;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
