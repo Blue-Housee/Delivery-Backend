@@ -92,7 +92,7 @@ public class StoreService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         // 활성 상태의 스토어 목록 조회
-        Page<Store> storePage = storeRepository.findByDeletedAtIsNull(pageable); // 변경된 부분
+        Page<Store> storePage = storeRepository.findByDeletedAtIsNull(pageable);
 
         // Store 객체를 StoreListResponseDto로 변환
         Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
