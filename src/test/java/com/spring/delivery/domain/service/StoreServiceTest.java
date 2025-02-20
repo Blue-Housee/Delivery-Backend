@@ -2,6 +2,7 @@ package com.spring.delivery.domain.service;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
+import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
 import com.spring.delivery.domain.domain.entity.Category;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.StoreCategory;
@@ -15,6 +16,7 @@ import com.spring.delivery.global.security.UserDetailsImpl;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +24,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -136,6 +137,55 @@ class StoreServiceTest {
         assertEquals(403, response.getStatus());
         assertEquals("가게를 등록할 권한이 없습니다.", response.getMessage());
     }
+
+    @Test
+    @Order(3)
+    @Transactional
+    @DisplayName("가게 조회 - 전체 목록")
+    void testGetAllStores() {
+        // 가게 등록 테스트를 통해 가게를 생성합니다.
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 1")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 1")
+                .tel("010-1111-2222")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        storeService.createStore(masterUserDetails, createRequest);
+
+        createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 2")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 2")
+                .tel("010-3333-4444")
+                .openStatus(true)
+                .startTime(LocalTime.of(10, 0))
+                .endTime(LocalTime.of(21, 0))
+                .build();
+
+        storeService.createStore(masterUserDetails, createRequest);
+
+        // 가게 목록 조회 메서드 호출
+        ApiResponseDto<Page<StoreListResponseDto>> response = storeService.getAllStores(0, 10, "createdAt", true);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertNotNull(response.getData());
+        assertTrue(response.getData().getContent().size() > 0); // 가게가 있어야 함
+
+        // 첫 번째 가게 검증
+        StoreListResponseDto firstStore = response.getData().getContent().get(0);
+        assertNotNull(firstStore);
+        assertEquals("테스트 가게 1", firstStore.getName());
+        assertEquals("테스트 주소 1", firstStore.getAddress());
+        assertEquals("010-1111-2222", firstStore.getTel());
+        assertTrue(firstStore.isOpenStatus());
+    }
+
 
 }
 
