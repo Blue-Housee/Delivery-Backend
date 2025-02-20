@@ -113,6 +113,7 @@ public class OrderService {
         return ApiResponseDto.success(null);
     }
 
+    @Transactional
     public ApiResponseDto<OrderMenuResponseDto> getOrder(UUID id) {
         // 들어온 주문 id가 주문 DB에 있는지 확인
         Order order = orderRepository.findById(id).orElse(null);
