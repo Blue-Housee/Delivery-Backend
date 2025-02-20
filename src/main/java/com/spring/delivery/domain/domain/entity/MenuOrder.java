@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -36,8 +37,11 @@ public class MenuOrder extends BaseEntity {
         this.order = order;
     }
 
-    public static MenuOrder createMenuOrder(Order order, Menu menu, Long amount) {
+    public static MenuOrder create(Order order, Menu menu, Long amount) {
         return new MenuOrder(order, menu, amount);
     }
 
+    public static void update(MenuOrder updateMenuOrder, Long updateValue) {
+        updateMenuOrder.amount = updateValue;
+    }
 }

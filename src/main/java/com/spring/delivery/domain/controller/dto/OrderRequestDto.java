@@ -26,4 +26,7 @@ public class OrderRequestDto {
 
     // 총 금액
     private Long totalPrice;
+
+    // 수정용 메뉴 id
+    private List<Map<UUID, Long>> updateMenuIds;
 }
