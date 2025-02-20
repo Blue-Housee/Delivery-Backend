@@ -300,6 +300,65 @@ class StoreServiceTest {
         assertEquals("가게를 수정할 권한이 없습니다.", response.getMessage());
     }
 
+    @Test
+    @Order(7)
+    @Transactional
+    @DisplayName("가게 삭제 - 권한 있음")
+    void testDeleteStoreSuccess() {
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 6")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 6")
+                .tel("010-8888-9999")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
+        UUID storeId = createResponse.getData(); // 생성된 가게 ID
+
+        // 가게 삭제 메서드 호출
+        ApiResponseDto response = storeService.deleteStore(masterUserDetails, storeId);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertEquals("요청이 성공적으로 처리되었습니다.", response.getMessage());
+
+        // 데이터베이스에서 가게 조회 후 삭제 여부 확인
+        Store deletedStore = storeRepository.findById(storeId).orElse(null);
+        assertNotNull(deletedStore);
+        assertNotNull(deletedStore.getDeletedAt()); // 삭제된 가게의 deletedAt이 설정되어 있어야 함
+    }
+
+    @Test
+    @Order(8)
+    @Transactional
+    @DisplayName("가게 삭제 - 권한 없음")
+    void testDeleteStoreFailDueToInsufficientPermissions() {
+        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
+                .name("테스트 가게 7")
+                .categoryIds(List.of(testCategoryId))
+                .address("테스트 주소 7")
+                .tel("010-0000-1111")
+                .openStatus(true)
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build();
+
+        ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
+        UUID storeId = createResponse.getData(); // 생성된 가게 ID
+
+        // 권한이 없는 유저로 가게 삭제 메서드 호출
+        ApiResponseDto response = storeService.deleteStore(customerUserDetails, storeId);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(403, response.getStatus());
+        assertEquals("가게를 삭제할 권한이 없습니다.", response.getMessage());
+    }
+
 
 }
 
