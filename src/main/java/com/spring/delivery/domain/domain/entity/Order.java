@@ -37,11 +37,11 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    private Order(User userId, String address ,String order_type, Long total_price) {
+    private Order(User userId, String address ,String orderType, Long totalPrice) {
         this.user = userId;
         this.address = address;
-        this.orderType = order_type;
-        this.totalPrice = total_price;
+        this.orderType = orderType;
+        this.totalPrice = totalPrice;
     }
 
     public static Order createOrder(OrderRequestDto orderRequestDto) {
