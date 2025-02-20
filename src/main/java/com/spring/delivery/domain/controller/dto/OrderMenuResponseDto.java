@@ -16,6 +16,6 @@ public class OrderMenuResponseDto {
     private List<Menu> menuList;
 
     public static OrderMenuResponseDto from(Order order, List<Menu> menus) {
-        return new OrderMenuResponseDto(order, menus);
+            return new OrderMenuResponseDto(order, menus);
     }
 }

@@ -9,6 +9,10 @@ import com.spring.delivery.domain.domain.repository.MenuRepository;
 import com.spring.delivery.domain.domain.repository.OrderRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,7 +117,6 @@ public class OrderService {
         return ApiResponseDto.success(null);
     }
 
-    @Transactional
     public ApiResponseDto<OrderMenuResponseDto> getOrder(UUID id) {
         // 들어온 주문 id가 주문 DB에 있는지 확인
         Order order = orderRepository.findById(id).orElse(null);
@@ -136,5 +139,48 @@ public class OrderService {
 
         // 주문정보 + 메뉴정보들을 합쳐서 보내준다.
         return ApiResponseDto.success(OrderMenuResponseDto.from(order, menus));
+    }
+
+    public ApiResponseDto<List<OrderMenuResponseDto>> getOrders(Long userId,
+                                                                String orderStatus,
+                                                                String sort,
+                                                                String order,
+                                                                int page,
+                                                                int size ,
+                                                                UserDetailsImpl userDetails) {
+        // MASTER, MANAGER만 사용가능 -> userDetails에서 role확인
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        // user의 권한이 MASETR , MANAGER 라면 TRUE값 리턴
+        boolean isMangerOrMaster = authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_MANAGER") || auth.getAuthority().equals("ROLE_MASTER"));
+
+        // isMangerOrMaster 가 False 라면 return 권한없음
+        if (!isMangerOrMaster) {
+            return ApiResponseDto.fail(403, "주문목록을 조회할 권한이 없습니다.");
+        }
+
+
+        // 페이징
+        Pageable pageable = PageRequest.of(page-1, size, "desc".equalsIgnoreCase(order)
+                ? Sort.by(sort).descending() : Sort.by(sort).ascending());
+
+        Page<Order> orderPage = orderRepository.findByUserIdAndOrderStatus(userId, orderStatus, pageable);
+
+        // 주문 목록을 DTO로 변환
+        List<OrderMenuResponseDto> orderMenuResponseDtos = orderPage.getContent().stream()
+                .map(orders -> {
+                    // 주문 아이디로 메뉴 리스트 조회
+                    List<MenuOrder> menuOrders = menuOrderRepository.findByOrderId(orders.getId());
+
+                    // 메뉴 아이디들로 메뉴 정보 조회
+                    List<Menu> menus = menuOrders.stream()
+                            .map(menuOrder -> menuRepository.findById(menuOrder.getId()).orElse(null))
+                            .collect(Collectors.toList());
+
+                    // 주문 정보와 메뉴 리스트를 DTO로 변환하여 반환
+                    return new OrderMenuResponseDto(orders, menus);
+                }).toList();
+
+        return ApiResponseDto.success(orderMenuResponseDtos);
     }
 }
