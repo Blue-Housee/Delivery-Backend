@@ -11,26 +11,4 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 public class CustomServletConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private RefererInterceptor refererInterceptor;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(refererInterceptor).addPathPatterns("/**");
-    }
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-        registry.addResourceHandler("/js/**")
-                .addResourceLocations("classpath:/static/js/");
-        registry.addResourceHandler("/fonts/**")
-                .addResourceLocations("classpath:/static/fonts/");
-        registry.addResourceHandler("/css/**")
-                .addResourceLocations("classpath:/static/css/");
-        registry.addResourceHandler("/assets/**")
-                .addResourceLocations("classpath:/static/assets/");
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("classpath:/static/images/");
-    }
 }

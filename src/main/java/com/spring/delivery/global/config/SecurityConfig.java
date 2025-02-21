@@ -74,8 +74,7 @@ public class SecurityConfig{
                         "/webjars/**"
                 ).permitAll()
                 .anyRequest().authenticated() // 다른 모든 요청은 인증 필요
-        ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        ;
+        );
 
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
@@ -84,17 +83,6 @@ public class SecurityConfig{
         return http.build();
     }
 
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html",
-                "/swagger-resources/**",
-                "/webjars/**"
-        );
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
