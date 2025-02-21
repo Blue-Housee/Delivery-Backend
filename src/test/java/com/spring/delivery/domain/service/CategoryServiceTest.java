@@ -38,59 +38,52 @@ class CategoryServiceTest {
 
     private UserDetailsImpl masterUserDetails;
     private UserDetailsImpl customerUserDetails;
-    private CategoryRequestDto requestDto;
-    private UUID testCategoryId;
 
     @BeforeEach
     void setUp() {
-        // MASTER 권한을 가진 유저 생성
-        User masterUser = User.createUser("masterUser", "masterUser_" + UUID.randomUUID() + "@example.com", "password", Role.MASTER);
+        categoryRepository.deleteAll();
+        userRepository.deleteAll();
+
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
         userRepository.save(masterUser);
         masterUserDetails = new UserDetailsImpl(masterUser);
 
-        // CUSTOMER 권한을 가진 유저 생성
-        User customerUser = User.createUser("customerUser", "customerUser_" + UUID.randomUUID() + "@example.com", "password", Role.CUSTOMER);
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
         userRepository.save(customerUser);
         customerUserDetails = new UserDetailsImpl(customerUser);
     }
 
     @Test
     @Order(1)
-    @Transactional
     @DisplayName("카테고리 생성 - 권한 있음")
+    @Transactional
     void testCreateCategorySuccess() {
-        requestDto = CategoryRequestDto.builder()
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
 
-        // 카테고리 생성 메서드 호출
         ApiResponseDto<UUID> response = categoryService.createCategory(masterUserDetails, requestDto);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
 
-        // 데이터베이스에서 카테고리 조회
-        testCategoryId = response.getData();
-        Category createdCategory = categoryRepository.findById(testCategoryId).orElse(null);
+        Category createdCategory = categoryRepository.findById(response.getData()).orElse(null);
         assertNotNull(createdCategory);
         assertEquals(requestDto.getName(), createdCategory.getName());
     }
 
     @Test
     @Order(2)
-    @Transactional
     @DisplayName("카테고리 생성 - 권한 없음")
+    @Transactional
     void testCreateCategoryFailDueToInsufficientPermissions() {
-        requestDto = CategoryRequestDto.builder()
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
 
-        // 권한이 없는 유저로 카테고리 생성 메서드 호출
         ApiResponseDto response = categoryService.createCategory(customerUserDetails, requestDto);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(403, response.getStatus());
         assertEquals("권한이 없습니다.", response.getMessage());
@@ -99,27 +92,70 @@ class CategoryServiceTest {
     @Test
     @Order(3)
     @DisplayName("카테고리 조회 - 전체 목록")
+    @Transactional
     void testGetAllCategories() {
-        // 여러 개의 카테고리 생성
         for (int i = 1; i <= 5; i++) {
             CategoryRequestDto createRequest = CategoryRequestDto.builder()
                     .name("테스트 카테고리 " + i)
                     .build();
-            categoryService.createCategory(masterUserDetails, createRequest); // 카테고리 생성
+            categoryService.createCategory(masterUserDetails, createRequest);
         }
 
-        // 카테고리 목록 조회 메서드 호출
         ApiResponseDto<?> response = categoryService.getAllCategories(masterUserDetails, 0, 10, "name", true);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
-        assertNotNull(response.getData());
 
-        // Page 객체에서 List로 변환
         List<CategoryListResponseDto> categories = ((Page<CategoryListResponseDto>) response.getData()).getContent();
-
-        assertTrue(categories.size() >= 5); // 생성한 카테고리의 수 이상이어야 함
+        assertTrue(categories.size() >= 5);
     }
 
+    @Test
+    @Order(4)
+    @DisplayName("카테고리 수정 - 권한 있음")
+    @Transactional
+    void testUpdateCategorySuccess() {
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
+                .name("테스트 카테고리")
+                .build();
+
+        ApiResponseDto<UUID> createResponse = categoryService.createCategory(masterUserDetails, requestDto);
+        UUID categoryId = createResponse.getData();
+
+        CategoryRequestDto updateRequest = CategoryRequestDto.builder()
+                .name("수정된 카테고리 이름")
+                .build();
+
+        ApiResponseDto<?> response = categoryService.updateCategory(masterUserDetails, categoryId, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+
+        Category updatedCategory = categoryRepository.findById(categoryId).orElse(null);
+        assertNotNull(updatedCategory);
+        assertEquals(updateRequest.getName(), updatedCategory.getName());
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("카테고리 수정 - 권한 없음")
+    @Transactional
+    void testUpdateCategoryFailDueToInsufficientPermissions() {
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
+                .name("테스트 카테고리")
+                .build();
+
+        ApiResponseDto<UUID> createResponse = categoryService.createCategory(masterUserDetails, requestDto);
+        UUID categoryId = createResponse.getData();
+
+        CategoryRequestDto updateRequest = CategoryRequestDto.builder()
+                .name("수정된 카테고리 이름")
+                .build();
+
+        ApiResponseDto<?> response = categoryService.updateCategory(customerUserDetails, categoryId, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(403, response.getStatus());
+        assertEquals("권한이 없습니다.", response.getMessage());
+    }
 }
