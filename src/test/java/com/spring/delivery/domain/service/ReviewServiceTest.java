@@ -111,7 +111,7 @@ class ReviewServiceTest {
             reviewRepository.save(review);
         }
 
-        ReviewStoreResponseDto storeReviews = reviewService.getStoreReview(dummyStoreId, 0, 3);
+        ReviewStoreResponseDto storeReviews = reviewService.getStoreReview(dummyStoreId, 0, 3, "createdAt", "ESC");
         assertNotNull(storeReviews);
         assertEquals(0, storeReviews.getPage());
         assertEquals(3, storeReviews.getSize());
@@ -127,7 +127,8 @@ class ReviewServiceTest {
         createDto.setRating(3.5);
         createDto.setComment("Average product");
 
-        createDto.setOrderId(1L);
+        UUID id = UUID.randomUUID();
+        createDto.setOrderId(id);
         ReviewResponseDto createResponse = reviewService.createReview(dummyStoreId, createDto, userDetails);
         UUID reviewId = createResponse.getId();
 
