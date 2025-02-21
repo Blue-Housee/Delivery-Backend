@@ -5,6 +5,7 @@ import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.service.UserService;
 import com.spring.delivery.global.security.UserDetailsImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "회원가입 API")
     @PostMapping("/user/signUp") //회원가입
     private ResponseEntity<ApiResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestDto, BindingResult bindingResult) {
 
@@ -45,6 +47,7 @@ public class UserController {
                 );
     }
 
+    @Operation(summary = "User 단건 조회 API")
     @GetMapping("/user/{id}")
     private ResponseEntity<ApiResponseDto> getUser(
             @PathVariable("id") Long id,
@@ -64,6 +67,7 @@ public class UserController {
                 );
     }
 
+    @Operation(summary = "User search API")
     @GetMapping("/user")
     private ResponseEntity<ApiResponseDto> searchUsers(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -98,6 +102,7 @@ public class UserController {
                 );
     }
 
+    @Operation(summary = "User 변경 API")
     @PatchMapping("/user/{id}")
     private ResponseEntity<ApiResponseDto> updateUser(
             @PathVariable("id") Long id,
@@ -122,6 +127,7 @@ public class UserController {
                 );
     }
 
+    @Operation(summary = "User 삭제 API")
     @DeleteMapping("/user/{id}")
     private ResponseEntity<ApiResponseDto> deleteUser(
             @PathVariable("id") Long id,

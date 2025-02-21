@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig{
+public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
@@ -62,6 +62,7 @@ public class SecurityConfig{
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // resources 접근 허용
                 .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll() // 로그인, 회원가입 요청 접근 허용
+                .requestMatchers("/swagger-ui/**", "v3/api-docs/**", "/swagger-resources/**").permitAll() // swagger 관련 요청 접근 허용
                 .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll() // GET 요청에 대해서만 허용
                 .anyRequest().authenticated() // 다른 모든 요청은 인증 필요
         );
@@ -74,7 +75,7 @@ public class SecurityConfig{
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
