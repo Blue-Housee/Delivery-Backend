@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -90,10 +91,15 @@ public class ReviewService {
     }
 
     //상점의 리뷰들 전체 검색 기능
-    public ReviewStoreResponseDto getStoreReview(UUID storeId, int page, int size) {
+    //생성일순, 수정일 , 10건, 30건, 50
+    public ReviewStoreResponseDto getStoreReview(UUID storeId, int page, int size, String criteria, String sort) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new NoSuchElementException("해당되는 상점이 없습니다"));
 
-        Pageable pageable = PageRequest.of(page, size);
+        String pageCriteria  = criteria.equals("createdAt") ? "createdAt" : "updatedAt";
+
+        Sort pageSort = sort.equals("ASC") ? Sort.by(Sort.Direction.ASC, pageCriteria)  : Sort.by(Sort.Direction.DESC, pageCriteria);
+
+        Pageable pageable = PageRequest.of(page, size, pageSort);
 
         Page<Review> storeReview = reviewRepository.findByReview(store.getId(), pageable);
 
