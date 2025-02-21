@@ -25,11 +25,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/user/health") //체크용
-    private ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("health");
-    }
-
     @PostMapping("/user/signUp") //회원가입
     private ResponseEntity<ApiResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestDto, BindingResult bindingResult) {
 
