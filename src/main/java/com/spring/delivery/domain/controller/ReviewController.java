@@ -8,6 +8,8 @@ import com.spring.delivery.domain.service.ReviewService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 
 import jakarta.validation.Valid;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +18,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ReviewController {
 
     private final ReviewService reviewService;
-
-    public ReviewController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
 
     //리뷰 단건 검색
     @GetMapping("/reviews/{reviewId}")
@@ -35,10 +34,12 @@ public class ReviewController {
     //상점의 리뷰 전체 검색(페이지네이션)
     @GetMapping("/stores/{storeId}/reviews")
     public ResponseEntity<ApiResponseDto> getStoreReview(@PathVariable UUID storeId,
-                                                         @RequestParam("page") int page,
-                                                         @RequestParam("size") int size
+                                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                                         @RequestParam(value = "size", defaultValue = "10") int size,
+                                                         @RequestParam(value = "orderby", defaultValue = "createdAt") String criteria,
+                                                         @RequestParam(value = "sort", defaultValue = "DESC") String sort
     ){
-        ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.getStoreReview(storeId, page, size));
+        ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.getStoreReview(storeId, page, size, criteria, sort));
 
         return ResponseEntity.ok(apiResponseDto);
     }
@@ -63,7 +64,6 @@ public class ReviewController {
 
         return ResponseEntity.ok(apiResponseDto);
     }
-
 
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponseDto> deleteReview (@PathVariable UUID reviewId,

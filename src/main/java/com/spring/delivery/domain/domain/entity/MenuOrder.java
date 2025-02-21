@@ -19,7 +19,7 @@ public class MenuOrder extends BaseEntity {
     @UuidGenerator
     private UUID id;
 
-    private int amount;
+    private Long amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
@@ -28,4 +28,18 @@ public class MenuOrder extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
+    private MenuOrder(Order order, Menu menu, Long amount) {
+        this.amount = amount;
+        this.menu = menu;
+        this.order = order;
+    }
+
+    public static MenuOrder create(Order order, Menu menu, Long amount) {
+        return new MenuOrder(order, menu, amount);
+    }
+
+    public static void update(MenuOrder updateMenuOrder, Long updateValue) {
+        updateMenuOrder.amount = updateValue;
+    }
 }

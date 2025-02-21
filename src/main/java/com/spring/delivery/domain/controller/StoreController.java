@@ -1,9 +1,10 @@
 package com.spring.delivery.domain.controller;
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
+import com.spring.delivery.domain.controller.dto.store.StoreCreateRequestDto;
 import com.spring.delivery.domain.controller.dto.store.StoreDetailResponseDto;
 import com.spring.delivery.domain.controller.dto.store.StoreListResponseDto;
-import com.spring.delivery.domain.controller.dto.store.StoreRequestDto;
+import com.spring.delivery.domain.controller.dto.store.StoreUpdateRequestDto;
 import com.spring.delivery.domain.service.StoreService;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,7 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponseDto> createStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody StoreRequestDto requestDto) {
+    public ResponseEntity<ApiResponseDto> createStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody StoreCreateRequestDto requestDto) {
         ApiResponseDto responseDto = storeService.createStore(userDetails, requestDto);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
@@ -49,7 +50,7 @@ public class StoreController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponseDto> updateStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody StoreRequestDto requestDto) {
+    public ResponseEntity<ApiResponseDto> updateStore(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID id, @RequestBody StoreUpdateRequestDto requestDto) {
         ApiResponseDto responseDto = storeService.updateStore(userDetails, id, requestDto);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
@@ -64,12 +65,14 @@ public class StoreController {
 
     @GetMapping("/search")
     public ResponseEntity<ApiResponseDto<Page<StoreListResponseDto>>> searchStores(
-            @RequestParam String query,
+            @RequestParam(required = false) String storeName,    // 지점 이름 (선택적)
+            @RequestParam(required = false) String categoryName, // 카테고리 (선택적)
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
             @RequestParam(value = "sortBy") String sortBy,
             @RequestParam(value = "isAsc") boolean isAsc) {
-        ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.searchStores(query, page, size, sortBy, isAsc);
+
+        ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.searchStores(storeName, categoryName, page, size, sortBy, isAsc);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }

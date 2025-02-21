@@ -1,6 +1,6 @@
 package com.spring.delivery.domain.domain.entity;
 
-import com.spring.delivery.domain.controller.dto.OrderRequestDto;
+import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,42 +26,38 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String order_status;
+    private String orderStatus;
 
-    private String order_type;
+    private String orderType;
 
-    private Long total_price;
+    private Long totalPrice;
 
-    @OneToOne(mappedBy = "order")
-    private Payment payment;
+    private String address;
 
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
-    private Order(User userId, String order_type, Long total_price, Payment payment) {
+    private Order(User userId, String address ,String orderType, Long totalPrice) {
         this.user = userId;
-        this.order_type = order_type;
-        this.total_price = total_price;
-        this.payment = payment;
-
+        this.address = address;
+        this.orderType = orderType;
+        this.totalPrice = totalPrice;
     }
 
     public static Order createOrder(OrderRequestDto orderRequestDto) {
         return new Order(
                 orderRequestDto.getUserId(),
                 orderRequestDto.getOrderType(),
-                orderRequestDto.getTotalPrice(),
-                orderRequestDto.getPaymentId()
+                orderRequestDto.getAddress(),
+                orderRequestDto.getTotalPrice()
         );
     }
 
     public static void update(Order order, OrderRequestDto orderRequestDto) {
-        if (orderRequestDto.getPaymentId() != null) { order.payment = orderRequestDto.getPaymentId(); }
-        if (orderRequestDto.getTotalPrice() != null) { order.total_price = orderRequestDto.getTotalPrice(); }
+        if (orderRequestDto.getTotalPrice() != null) { order.totalPrice = orderRequestDto.getTotalPrice(); }
         if (orderRequestDto.getUserId() != null){ order.user = orderRequestDto.getUserId(); }
-        if (orderRequestDto.getOrderType() != null){ order.order_type = orderRequestDto.getOrderType(); }
+        if (orderRequestDto.getOrderType() != null){ order.orderType = orderRequestDto.getOrderType(); }
+        if (orderRequestDto.getAddress() != null){ order.address = orderRequestDto.getAddress(); }
     }
-
-
 
 }
