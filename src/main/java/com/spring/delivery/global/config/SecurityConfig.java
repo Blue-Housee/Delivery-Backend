@@ -72,10 +72,13 @@ public class SecurityConfig{
                         "/swagger-ui.html",
                         "/swagger-resources/**",
                         "/webjars/**"
-                ).permitAll()
+
+                ).permitAll()  // Swagger 관련 경로 허용
                 .anyRequest().authenticated() // 다른 모든 요청은 인증 필요
+
         ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        ;
+
+
 
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
@@ -100,4 +103,17 @@ public class SecurityConfig{
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/swagger-resources/**",
+                "/webjars/**"
+        );
+    }
+
 }
