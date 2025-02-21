@@ -190,9 +190,9 @@ class StoreServiceTest {
     @DisplayName("가게 조회 - 특정 가게 ID로 조회")
     void testGetStoreById() {
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 3")
+                .name("테스트 가게")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 3")
+                .address("테스트 주소")
                 .tel("010-5555-6666")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -200,7 +200,7 @@ class StoreServiceTest {
                 .build();
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = (UUID) createResponse.getData(); // 생성된 가게 ID
+        UUID storeId = createResponse.getData(); // 생성된 가게 ID
 
         // 가게 ID로 조회 메서드 호출
         ApiResponseDto<StoreDetailResponseDto> response = storeService.getStoreById(storeId);
@@ -212,8 +212,8 @@ class StoreServiceTest {
 
         StoreDetailResponseDto storeDetail = response.getData();
         assertEquals(storeId, storeDetail.getStoreId());
-        assertEquals("테스트 가게 3", storeDetail.getName());
-        assertEquals("테스트 주소 3", storeDetail.getAddress());
+        assertEquals("테스트 가게", storeDetail.getName());
+        assertEquals("테스트 주소", storeDetail.getAddress());
         assertEquals("010-5555-6666", storeDetail.getTel());
         assertTrue(storeDetail.isOpenStatus());
     }
@@ -224,9 +224,9 @@ class StoreServiceTest {
     @DisplayName("가게 수정 - 권한 있음")
     void testUpdateStoreSuccess() {
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 4")
+                .name("테스트 가게")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 4")
+                .address("테스트 주소")
                 .tel("010-7777-8888")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -234,7 +234,7 @@ class StoreServiceTest {
                 .build();
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = (UUID) createResponse.getData();
+        UUID storeId = createResponse.getData();
 
         // 수정할 요청 DTO 생성
         StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
@@ -269,9 +269,9 @@ class StoreServiceTest {
     @DisplayName("가게 수정 - 권한 없음")
     void testUpdateStoreFailDueToInsufficientPermissions() {
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 5")
+                .name("테스트 가게")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 5")
+                .address("테스트 주소")
                 .tel("010-4444-5555")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -279,7 +279,7 @@ class StoreServiceTest {
                 .build();
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = createResponse.getData(); // UUID를 직접 가져옴
+        UUID storeId = createResponse.getData();
 
         // 수정할 요청 DTO 생성
         StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
@@ -306,9 +306,9 @@ class StoreServiceTest {
     @DisplayName("가게 삭제 - 권한 있음")
     void testDeleteStoreSuccess() {
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 6")
+                .name("테스트 가게")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 6")
+                .address("테스트 주소")
                 .tel("010-8888-9999")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -338,9 +338,9 @@ class StoreServiceTest {
     @DisplayName("가게 삭제 - 권한 없음")
     void testDeleteStoreFailDueToInsufficientPermissions() {
         StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 7")
+                .name("테스트 가게")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 7")
+                .address("테스트 주소")
                 .tel("010-0000-1111")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -364,11 +364,10 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 검색 - 성공")
     void testSearchStoresSuccess() {
-        // 가게 등록 테스트를 통해 가게를 생성합니다.
         StoreCreateRequestDto createRequest1 = StoreCreateRequestDto.builder()
-                .name("테스트 가게 A")
+                .name("테스트 가게 1")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 A")
+                .address("테스트 주소 1")
                 .tel("010-1111-2222")
                 .openStatus(true)
                 .startTime(LocalTime.of(9, 0))
@@ -378,9 +377,9 @@ class StoreServiceTest {
         storeService.createStore(masterUserDetails, createRequest1);
 
         StoreCreateRequestDto createRequest2 = StoreCreateRequestDto.builder()
-                .name("테스트 가게 B")
+                .name("테스트 가게 2")
                 .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 B")
+                .address("테스트 주소 2")
                 .tel("010-3333-4444")
                 .openStatus(true)
                 .startTime(LocalTime.of(10, 0))
@@ -390,7 +389,7 @@ class StoreServiceTest {
         storeService.createStore(masterUserDetails, createRequest2);
 
         // 검색 메서드 호출
-        String query = "테스트 가게 A";
+        String query = "테스트 가게 1";
         ApiResponseDto<Page<StoreListResponseDto>> response = storeService.searchStores(query, 0, 10, "createdAt", true);
 
         // 결과 검증
@@ -402,8 +401,8 @@ class StoreServiceTest {
         // 검색된 가게 검증
         StoreListResponseDto firstStore = response.getData().getContent().get(0);
         assertNotNull(firstStore);
-        assertEquals("테스트 가게 A", firstStore.getName());
-        assertEquals("테스트 주소 A", firstStore.getAddress());
+        assertEquals("테스트 가게 1", firstStore.getName());
+        assertEquals("테스트 주소 1", firstStore.getAddress());
         assertEquals("010-1111-2222", firstStore.getTel());
     }
 
