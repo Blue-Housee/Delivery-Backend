@@ -101,7 +101,7 @@ class CategoryServiceTest {
             categoryService.createCategory(masterUserDetails, createRequest);
         }
 
-        ApiResponseDto<?> response = categoryService.getAllCategories(masterUserDetails, 0, 10, "name", true);
+        ApiResponseDto response = categoryService.getAllCategories(masterUserDetails, 0, 10, "name", true);
 
         assertNotNull(response);
         assertEquals(200, response.getStatus());
@@ -126,7 +126,7 @@ class CategoryServiceTest {
                 .name("수정된 카테고리 이름")
                 .build();
 
-        ApiResponseDto<?> response = categoryService.updateCategory(masterUserDetails, categoryId, updateRequest);
+        ApiResponseDto response = categoryService.updateCategory(masterUserDetails, categoryId, updateRequest);
 
         assertNotNull(response);
         assertEquals(200, response.getStatus());
@@ -152,10 +152,66 @@ class CategoryServiceTest {
                 .name("수정된 카테고리 이름")
                 .build();
 
-        ApiResponseDto<?> response = categoryService.updateCategory(customerUserDetails, categoryId, updateRequest);
+        ApiResponseDto response = categoryService.updateCategory(customerUserDetails, categoryId, updateRequest);
 
         assertNotNull(response);
         assertEquals(403, response.getStatus());
         assertEquals("권한이 없습니다.", response.getMessage());
     }
+
+    @Test
+    @Order(6)
+    @DisplayName("카테고리 삭제 - 권한 있음")
+    @Transactional
+    void testDeleteCategorySuccess() {
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
+                .name("테스트 카테고리")
+                .build();
+
+        // 카테고리 생성
+        ApiResponseDto<UUID> createResponse = categoryService.createCategory(masterUserDetails, requestDto);
+        UUID categoryId = createResponse.getData();
+
+        // 카테고리 삭제 메서드 호출
+        ApiResponseDto response = categoryService.deleteCategory(masterUserDetails, categoryId);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertEquals("요청이 성공적으로 처리되었습니다.", response.getMessage());
+
+        // 데이터베이스에서 카테고리 조회 후 삭제 여부 확인
+        Category deletedCategory = categoryRepository.findById(categoryId).orElse(null);
+        assertNotNull(deletedCategory);
+        assertNotNull(deletedCategory.getDeletedAt()); // 삭제된 카테고리의 deletedAt이 설정되어 있어야 함
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("카테고리 삭제 - 권한 없음")
+    @Transactional
+    void testDeleteCategoryFailDueToInsufficientPermissions() {
+        CategoryRequestDto requestDto = CategoryRequestDto.builder()
+                .name("테스트 카테고리")
+                .build();
+
+        // 카테고리 생성
+        ApiResponseDto<UUID> createResponse = categoryService.createCategory(masterUserDetails, requestDto);
+        UUID categoryId = createResponse.getData();
+
+        // 권한이 없는 유저로 카테고리 삭제 메서드 호출
+        ApiResponseDto response = categoryService.deleteCategory(customerUserDetails, categoryId);
+
+        // 결과 검증
+        assertNotNull(response);
+        assertEquals(403, response.getStatus());
+        assertEquals("권한이 없습니다.", response.getMessage());
+
+        // 삭제 후 카테고리 조회
+        Category existingCategory = categoryRepository.findById(categoryId).orElse(null);
+        assertNotNull(existingCategory); // 카테고리는 여전히 존재해야 함
+        assertNull(existingCategory.getDeletedAt()); // 삭제되지 않아야 함
+    }
+
+
 }
