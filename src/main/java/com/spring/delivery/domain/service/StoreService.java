@@ -234,7 +234,7 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponseDto<Page<StoreListResponseDto>> searchStores(String query, int page, int size, String sortBy, boolean isAsc) {
+    public ApiResponseDto<Page<StoreListResponseDto>> searchStores(String storeName, String categoryName, int page, int size, String sortBy, boolean isAsc) {
         // 페이지당 노출 건수 제한
         if (size != 10 && size != 30 && size != 50) {
             size = 10; // 기본값으로 10으로 설정
@@ -251,29 +251,31 @@ public class StoreService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         // 검색 수행
-        Page<Store> storePage = storeRepository.searchStores(query, pageable);
+        Page<Store> storePage = storeRepository.searchStores(categoryName, storeName, pageable);
 
         // Store 객체를 StoreListResponseDto로 변환
-        Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
+        Page<StoreListResponseDto> responseDtoPage = storePage.map(storeEntity -> {
             // 카테고리 처리
-            List<String> categories = store.getStoreCategories().stream()
+            List<String> categories = storeEntity.getStoreCategories().stream()
                     .map(storeCategory -> storeCategory.getCategory().getName())
                     .collect(Collectors.toList());
 
             return new StoreListResponseDto(
-                    store.getId(),
-                    store.getName(),
-                    store.getAddress(),
-                    store.getTel(),
-                    store.isOpenStatus(),
+                    storeEntity.getId(),
+                    storeEntity.getName(),
+                    storeEntity.getAddress(),
+                    storeEntity.getTel(),
+                    storeEntity.isOpenStatus(),
                     categories,
-                    store.getStartTime(),
-                    store.getEndTime()
+                    storeEntity.getStartTime(),
+                    storeEntity.getEndTime()
             );
         });
 
         // ApiResponseDto로 응답 반환
         return ApiResponseDto.success(responseDtoPage);
     }
+
+
 
 }

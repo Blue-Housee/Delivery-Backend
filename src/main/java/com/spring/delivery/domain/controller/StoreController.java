@@ -65,12 +65,14 @@ public class StoreController {
 
     @GetMapping("/search")
     public ResponseEntity<ApiResponseDto<Page<StoreListResponseDto>>> searchStores(
-            @RequestParam String query,
+            @RequestParam(required = false) String storeName,    // 지점 이름 (선택적)
+            @RequestParam(required = false) String categoryName, // 카테고리 (선택적)
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
             @RequestParam(value = "sortBy") String sortBy,
             @RequestParam(value = "isAsc") boolean isAsc) {
-        ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.searchStores(query, page, size, sortBy, isAsc);
+
+        ApiResponseDto<Page<StoreListResponseDto>> responseDto = storeService.searchStores(storeName, categoryName, page, size, sortBy, isAsc);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
