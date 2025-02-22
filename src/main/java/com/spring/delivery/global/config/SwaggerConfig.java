@@ -1,6 +1,8 @@
 package com.spring.delivery.global.config;
 
+import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.user.SignInRequestDto;
+import com.spring.delivery.domain.controller.dto.user.SignInResponseDto;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -70,8 +72,22 @@ public class SwaggerConfig {
                                                 .content(new Content().addMediaType("application/json",
                                                         new MediaType().schema(new Schema<SignInRequestDto>().example(new SignInRequestDto("testUser", "password123"))))))
                                         .responses(new ApiResponses()
-                                                .addApiResponse("200", new ApiResponse().description("로그인 성공"))
-                                                .addApiResponse("401", new ApiResponse().description("로그인 실패"))
+                                                .addApiResponse("200", new ApiResponse().description("로그인 성공")
+                                                        .content(new Content().addMediaType("application/json",
+                                                                new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
+                                                                        .example(new ApiResponseDto<>(
+                                                                                200,
+                                                                                "요청이 성공적으로 처리되었습니다.",
+                                                                                SignInResponseDto.builder().token("Bearer eygb...").build()
+                                                                        ))))))
+                                                .addApiResponse("401", new ApiResponse().description("로그인 실패")
+                                                        .content(new Content().addMediaType("application/json",
+                                                                new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
+                                                                        .example(new ApiResponseDto<>(
+                                                                                401,
+                                                                                "로그인 실패",
+                                                                                null
+                                                                        ))))))
                                         )
                         ));
         }
