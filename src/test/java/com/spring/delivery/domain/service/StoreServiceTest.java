@@ -76,15 +76,15 @@ class StoreServiceTest {
     @DisplayName("가게 등록 - 권한 있음")
     void testStoreCreationSuccess() {
         // 요청 DTO 생성
-        requestDto = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-1234-5678")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0)) // 09:00
-                .endTime(LocalTime.of(22, 0))   // 22:00
-                .build();
+        requestDto = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-1234-5678",
+                true,
+                LocalTime.of(9, 0),  // 09:00
+                LocalTime.of(22, 0)  // 22:00
+        );
 
         // 가게 생성 메서드 호출
         ApiResponseDto response = storeService.createStore(masterUserDetails, requestDto);
@@ -118,15 +118,15 @@ class StoreServiceTest {
     @DisplayName("가게 등록 - 권한 없음")
     void testStoreCreationFailDueToInsufficientPermissions() {
         // 요청 DTO 생성
-        requestDto = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-1234-5678")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        requestDto = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-1234-5678",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         // 권한이 없는 유저로 가게 생성 메서드 호출
         ApiResponseDto response = storeService.createStore(customerUserDetails, requestDto);
@@ -142,27 +142,27 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 조회 - 전체 목록")
     void testGetAllStores() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 1")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 1")
-                .tel("010-1111-2222")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게 1",
+                List.of(testCategoryId),
+                "테스트 주소 1",
+                "010-1111-2222",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         storeService.createStore(masterUserDetails, createRequest);
 
-        createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게 2")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 2")
-                .tel("010-3333-4444")
-                .openStatus(true)
-                .startTime(LocalTime.of(10, 0))
-                .endTime(LocalTime.of(21, 0))
-                .build();
+        createRequest = new StoreCreateRequestDto(
+                "테스트 가게 2",
+                List.of(testCategoryId),
+                "테스트 주소 2",
+                "010-3333-4444",
+                true,
+                LocalTime.of(10, 0),
+                LocalTime.of(21, 0)
+        );
 
         storeService.createStore(masterUserDetails, createRequest);
 
@@ -189,15 +189,15 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 조회 - 특정 가게 ID로 조회")
     void testGetStoreById() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-5555-6666")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-5555-6666",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData(); // 생성된 가게 ID
@@ -223,28 +223,29 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 수정 - 권한 있음")
     void testUpdateStoreSuccess() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-7777-8888")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-7777-8888",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData();
 
         // 수정할 요청 DTO 생성
-        StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
-                .name("수정된 가게 이름")
-                .categoryIds(List.of(testCategoryId)) // 카테고리는 유지
-                .address("수정된 주소")
-                .tel("010-9999-0000")
-                .startTime(LocalTime.of(10, 0)) // 수정된 시작 시간
-                .endTime(LocalTime.of(21, 0))   // 수정된 종료 시간
-                .build();
+        StoreUpdateRequestDto updateRequest = new StoreUpdateRequestDto(
+                "수정된 가게 이름",
+                List.of(testCategoryId), // 카테고리는 유지
+                "수정된 주소",
+                "010-9999-0000",
+                true, // openStatus 유지
+                LocalTime.of(10, 0), // 수정된 시작 시간
+                LocalTime.of(21, 0)   // 수정된 종료 시간
+        );
 
         // 가게 수정 메서드 호출
         ApiResponseDto<StoreUpdateResponseDto> response = storeService.updateStore(masterUserDetails, storeId, updateRequest);
@@ -268,28 +269,29 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 수정 - 권한 없음")
     void testUpdateStoreFailDueToInsufficientPermissions() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-4444-5555")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-4444-5555",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData();
 
         // 수정할 요청 DTO 생성
-        StoreUpdateRequestDto updateRequest = StoreUpdateRequestDto.builder()
-                .name("수정된 가게 이름")
-                .categoryIds(List.of(testCategoryId))
-                .address("수정된 주소")
-                .tel("010-9999-0000")
-                .startTime(LocalTime.of(10, 0))
-                .endTime(LocalTime.of(21, 0))
-                .build();
+        StoreUpdateRequestDto updateRequest = new StoreUpdateRequestDto(
+                "수정된 가게 이름",
+                List.of(testCategoryId),
+                "수정된 주소",
+                "010-9999-0000",
+                true,
+                LocalTime.of(10, 0),
+                LocalTime.of(21, 0)
+        );
 
         // 권한이 없는 유저로 가게 수정 메서드 호출
         ApiResponseDto response = storeService.updateStore(customerUserDetails, storeId, updateRequest);
@@ -305,15 +307,15 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 삭제 - 권한 있음")
     void testDeleteStoreSuccess() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-8888-9999")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-8888-9999",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData(); // 생성된 가게 ID
@@ -337,15 +339,15 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 삭제 - 권한 없음")
     void testDeleteStoreFailDueToInsufficientPermissions() {
-        StoreCreateRequestDto createRequest = StoreCreateRequestDto.builder()
-                .name("테스트 가게")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소")
-                .tel("010-0000-1111")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+                "테스트 가게",
+                List.of(testCategoryId),
+                "테스트 주소",
+                "010-0000-1111",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData(); // 생성된 가게 ID
@@ -364,27 +366,27 @@ class StoreServiceTest {
     @Transactional
     @DisplayName("가게 검색 - 성공")
     void testSearchStoresSuccess() {
-        StoreCreateRequestDto createRequest1 = StoreCreateRequestDto.builder()
-                .name("테스트 가게 1")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 1")
-                .tel("010-1111-2222")
-                .openStatus(true)
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
+        StoreCreateRequestDto createRequest1 = new StoreCreateRequestDto(
+                "테스트 가게 1",
+                List.of(testCategoryId),
+                "테스트 주소 1",
+                "010-1111-2222",
+                true,
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
+        );
 
         storeService.createStore(masterUserDetails, createRequest1);
 
-        StoreCreateRequestDto createRequest2 = StoreCreateRequestDto.builder()
-                .name("테스트 가게 2")
-                .categoryIds(List.of(testCategoryId))
-                .address("테스트 주소 2")
-                .tel("010-3333-4444")
-                .openStatus(true)
-                .startTime(LocalTime.of(10, 0))
-                .endTime(LocalTime.of(21, 0))
-                .build();
+        StoreCreateRequestDto createRequest2 = new StoreCreateRequestDto(
+                "테스트 가게 2",
+                List.of(testCategoryId),
+                "테스트 주소 2",
+                "010-3333-4444",
+                true,
+                LocalTime.of(10, 0),
+                LocalTime.of(21, 0)
+        );
 
         storeService.createStore(masterUserDetails, createRequest2);
 
@@ -421,7 +423,5 @@ class StoreServiceTest {
         assertNotNull(response.getData());
         assertEquals(0, response.getData().getTotalElements()); // 검색 결과가 없어야 함
     }
-
-
 }
 
