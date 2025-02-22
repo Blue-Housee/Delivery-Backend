@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ class ReviewServiceTest {
         user = userRepository.save(user);
         userDetails = new UserDetailsImpl(user);
 
-        dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalDateTime.now(),LocalDateTime.now(), user);
+        dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
         dummyStoreId = dummyStore.getId();
     }
