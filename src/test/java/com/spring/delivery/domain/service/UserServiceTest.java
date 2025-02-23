@@ -9,6 +9,9 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +52,13 @@ class UserServiceTest {
         customerUserDetails = new UserDetailsImpl(customer);
         managerUserDetails = new UserDetailsImpl(manager);
         masterUserDetails = new UserDetailsImpl(master);
+
+
+    }
+
+    @BeforeEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();  // 테스트 시작 전에 SecurityContext 초기화
     }
 
     //-- 회원가입 --
@@ -162,7 +172,10 @@ class UserServiceTest {
     class Read {
         @Test
         @DisplayName("회원 단건 조회 성공")
+        @WithMockUser()
         void getUser_success() {
+            setUpSecurityContext("customer");
+
             UserDetailsResponseDto user = userService.getUser(customer.getId(), customerUserDetails);
 
             assertEquals(user.getUsername(), customer.getUsername());
@@ -177,11 +190,13 @@ class UserServiceTest {
         @Transactional
         void updateUser_success() {
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
-                    .username(customer.getUsername())
+                    .username(manager.getUsername())
                     .email(UPDATED_EMAIL)
                     .build();
 
-            UserDetailsResponseDto updatedUser = userService.updateUser(customer.getId(), requestDto, customerUserDetails);
+            setUpSecurityContext("manager");
+
+            UserDetailsResponseDto updatedUser = userService.updateUser(manager.getId(), requestDto, managerUserDetails);
 
             assertEquals(UPDATED_EMAIL, updatedUser.getEmail());
         }
@@ -194,16 +209,18 @@ class UserServiceTest {
         @DisplayName("회원 삭제 성공")
         @Transactional
         void deleteUser_success() {
-            UserDeleteResponseDto deletedUser = userService.deleteUser(customer.getId(), customerUserDetails);
+            setUpSecurityContext("master");
 
-            assertEquals(deletedUser.getUserId(), customer.getId());
+            UserDeleteResponseDto deletedUser = userService.deleteUser(master.getId(), masterUserDetails);
+
+            assertEquals(deletedUser.getUserId(), master.getId());
 
             User user = userRepository.findById(deletedUser.getUserId()).orElse(null);
             if (user != null) {
-                assertEquals(user.getRole(), Role.CUSTOMER);
+                assertEquals(user.getRole(), Role.MASTER);
                 assertNotNull(user.getDeletedAt());
                 assertNotNull(user.getDeletedBy());
-                assertEquals(user.getDeletedBy(), customerUserDetails.getUsername());
+                assertEquals(user.getDeletedBy(), masterUserDetails.getUsername());
             }
         }
     }
@@ -214,6 +231,8 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 성공")
         void searchUsers_success() {
+            setUpSecurityContext("manager");
+
             UserPageResponseDto userList = userService.searchUsers(managerUserDetails, 0, 5, "createdAt", "DESC", "ma");
 
             assertEquals(master.getUsername(), userList.getUsers().get(0).getUsername());
@@ -236,6 +255,22 @@ class UserServiceTest {
                 .role(role)
                 .adminToken(adminToken)
                 .build();
+    }
+
+    void setUpSecurityContext(String userType) {
+        if (userType.equals("customer")) {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(customerUserDetails, null, customerUserDetails.getAuthorities())
+            );
+        } else if (userType.equals("manager")) {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(managerUserDetails, null, managerUserDetails.getAuthorities())
+            );
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(masterUserDetails, null, masterUserDetails.getAuthorities())
+            );
+        }
     }
 
 }
