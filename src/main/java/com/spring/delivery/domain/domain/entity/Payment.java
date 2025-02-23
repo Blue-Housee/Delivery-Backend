@@ -19,8 +19,8 @@ public class Payment extends BaseEntity{
     @UuidGenerator
     private UUID id;
 
-    private String cardnumber;
-    private boolean payments_status;
+    private String cardNumber;
+    private boolean paymentStatus;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id") //외래키 설정
@@ -29,8 +29,8 @@ public class Payment extends BaseEntity{
     public static Payment createPayment(Order order, String cardNumber) {
         Payment payment = new Payment();
         payment.order = order;
-        payment.cardnumber = cardNumber;
-        payment.payments_status = true;
+        payment.cardNumber = cardNumber;
+        payment.paymentStatus = true;
         return payment;
     }
 }

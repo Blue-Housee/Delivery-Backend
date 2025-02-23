@@ -1,11 +1,13 @@
-package com.spring.delivery.domain.controller.dto.order;
+package com.spring.delivery.domain.controller.dto.menu;
 
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
+@Setter
 @Getter
 @NoArgsConstructor
 public class MenuRequestDto {

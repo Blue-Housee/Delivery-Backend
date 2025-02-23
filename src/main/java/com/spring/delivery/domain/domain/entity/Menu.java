@@ -1,6 +1,6 @@
 package com.spring.delivery.domain.domain.entity;
 
-import com.spring.delivery.domain.controller.dto.order.MenuRequestDto;
+import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.spring.delivery.domain.service;
 
 
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
-import com.spring.delivery.domain.controller.dto.order.MenuRequestDto;
-import com.spring.delivery.domain.controller.dto.order.MenuResponseDto;
+import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
+import com.spring.delivery.domain.controller.dto.menu.MenuResponseDto;
 import com.spring.delivery.domain.domain.entity.Menu;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
