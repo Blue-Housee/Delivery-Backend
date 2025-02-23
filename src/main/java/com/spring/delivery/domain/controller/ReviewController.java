@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +47,7 @@ public class ReviewController {
 
     //리뷰 생성
     @PostMapping("/stores/{storeId}/reviews")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<ApiResponseDto> createReview (@PathVariable UUID storeId,
                                                         @Valid @RequestBody ReviewRequestDto dto,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -66,6 +68,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/reviews/{reviewId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER','MASTER')")
     public ResponseEntity<ApiResponseDto> deleteReview (@PathVariable UUID reviewId,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
