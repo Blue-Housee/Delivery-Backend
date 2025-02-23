@@ -31,13 +31,16 @@ public class StoreService {
     private final UserRepository userRepository;
     private final StoreCategoryRepository storeCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final ReviewService reviewService; // ReviewService 주입
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
-                        StoreCategoryRepository storeCategoryRepository, CategoryRepository categoryRepository) {
+                        StoreCategoryRepository storeCategoryRepository, CategoryRepository categoryRepository,
+                        ReviewService reviewService) {
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.storeCategoryRepository = storeCategoryRepository;
         this.categoryRepository = categoryRepository;
+        this.reviewService = reviewService;
     }
 
     public ApiResponseDto createStore(UserDetailsImpl userDetails, StoreCreateRequestDto requestDto) {
@@ -92,13 +95,15 @@ public class StoreService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         // 활성 상태의 스토어 목록 조회
-        Page<Store> storePage = storeRepository.findByDeletedAtIsNull(pageable); // 변경된 부분
+        Page<Store> storePage = storeRepository.findByDeletedAtIsNull(pageable);
 
         // Store 객체를 StoreListResponseDto로 변환
         Page<StoreListResponseDto> responseDtoPage = storePage.map(store -> {
             List<String> categories = store.getStoreCategories().stream()
                     .map(storeCategory -> storeCategory.getCategory().getName())
                     .collect(Collectors.toList());
+
+            Double averageRating = reviewService.selectStoreAverageRating(store.getId());
 
             return new StoreListResponseDto(
                     store.getId(),
@@ -108,7 +113,8 @@ public class StoreService {
                     store.isOpenStatus(),
                     categories,
                     store.getStartTime(),
-                    store.getEndTime()
+                    store.getEndTime(),
+                    averageRating
             );
         });
 
@@ -260,6 +266,8 @@ public class StoreService {
                     .map(storeCategory -> storeCategory.getCategory().getName())
                     .collect(Collectors.toList());
 
+            Double averageRating = reviewService.selectStoreAverageRating(storeEntity.getId());
+
             return new StoreListResponseDto(
                     storeEntity.getId(),
                     storeEntity.getName(),
@@ -268,13 +276,15 @@ public class StoreService {
                     storeEntity.isOpenStatus(),
                     categories,
                     storeEntity.getStartTime(),
-                    storeEntity.getEndTime()
+                    storeEntity.getEndTime(),
+                    averageRating
             );
         });
 
         // ApiResponseDto로 응답 반환
         return ApiResponseDto.success(responseDtoPage);
     }
+
 
 
 

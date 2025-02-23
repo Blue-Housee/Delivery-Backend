@@ -16,10 +16,11 @@ public class StoreListResponseDto {
     private List<String> categories; // 카테고리 리스트
     private LocalTime startTime;
     private LocalTime endTime;
+    private Double averageRating;
 
     public StoreListResponseDto(UUID storeId, String name, String address, String tel,
                                 boolean openStatus, List<String> categories,
-                                LocalTime startTime, LocalTime endTime) {
+                                LocalTime startTime, LocalTime endTime, Double averageRating) {
         this.storeId = storeId;
         this.name = name;
         this.address = address;
@@ -28,5 +29,6 @@ public class StoreListResponseDto {
         this.categories = categories;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.averageRating = averageRating;
     }
 }
