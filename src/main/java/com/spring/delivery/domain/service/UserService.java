@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,32 +72,23 @@ public class UserService {
                 .build();
     }
 
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER') or #id == #userDetails.user.id") // 자기 자신 or MANAGER, MASTER 만 접근 가능
     public UserDetailsResponseDto getUser(Long id, UserDetailsImpl userDetails) {
 
         User user = userRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
         );
 
-        String currentUsername = userDetails.getUsername();
-        Role currentUserRole = userDetails.getUser().getRole();
-
-        // 자기 자신 or MANAGER, MASTER 만 접근 가능
-        if (user.getUsername().equals(currentUsername) ||
-                currentUserRole == Role.MANAGER ||
-                currentUserRole == Role.MASTER
-        ) {
-            return UserDetailsResponseDto
-                    .builder()
-                    .userId(user.getId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .build();
-        }
-
-        throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
+        return UserDetailsResponseDto
+                .builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
     }
 
     @Transactional
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER') or #id == #userDetails.user.id") // 자기 자신 or MANAGER, MASTER 만 접근 가능
     public UserDetailsResponseDto updateUser(Long id, UserUpdateRequestDto requestDto, UserDetailsImpl userDetails) {
 
         log.info(requestDto.toString());
@@ -106,14 +98,6 @@ public class UserService {
 
         String currentUsername = userDetails.getUsername();
         Role currentUserRole = userDetails.getUser().getRole();
-
-        // 자기 자신 or MANAGER, MASTER 만 접근 가능
-        if (!(user.getUsername().equals(currentUsername) ||
-                currentUserRole == Role.MANAGER ||
-                currentUserRole == Role.MASTER)
-        ) {
-            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
-        }
 
         //상위 권한자의 정보 변경 차단(ex. MANAGER가 MASTER 정보는 변경할 수 없음)
         if(Role.isGreaterThen(user.getRole(), currentUserRole)) {
@@ -163,22 +147,12 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('MASTER') or #id == #userDetails.user.id") // 자기 자신 or MASTER 만 접근 가능
     public UserDeleteResponseDto deleteUser(Long id, UserDetailsImpl userDetails) {
         // 유저 존재 여부 확인
         User user = userRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
         );
-
-        //권한 확인
-        // 자기 자신 or MASTER 만 접근 가능
-        String currentUsername = userDetails.getUsername();
-        Role currentUserRole = userDetails.getUser().getRole();
-
-        if (!(user.getUsername().equals(currentUsername) ||
-                currentUserRole == Role.MASTER)
-        ) {
-            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
-        }
 
         //이미 삭제된 유저 확인
         if(user.getDeletedAt() != null && StringUtils.hasText(String.valueOf(user.getDeletedAt()))){
@@ -186,6 +160,7 @@ public class UserService {
         }
 
         //삭제
+        String currentUsername = userDetails.getUsername();
         user.delete(currentUsername); // 삭제한 사람: 로그인한 사용자
 
         return UserDeleteResponseDto
@@ -194,14 +169,8 @@ public class UserService {
                 .build();
     }
 
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')") //관리자 권한 확인(MANAGER, MASTER)
     public UserPageResponseDto searchUsers(UserDetailsImpl userDetails, int page, int size, String criteria, String sort, String username) {
-        //관리자 권한 확인(MANAGER, MASTER)
-        if(userDetails.getUser().getRole() != Role.MANAGER && 
-                userDetails.getUser().getRole() != Role.MASTER
-        ){
-            throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
-        }
-
         // sort 설정
         String pageCriteria  = criteria.equals("createdAt") ? "createdAt" : "updatedAt";
 
