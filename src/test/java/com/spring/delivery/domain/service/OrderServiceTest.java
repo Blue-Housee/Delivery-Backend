@@ -3,12 +3,13 @@ package com.spring.delivery.domain.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
+import com.spring.delivery.domain.controller.dto.order.OrderMenuResponseDto;
 import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
-import com.spring.delivery.domain.domain.entity.Menu;
-import com.spring.delivery.domain.domain.entity.Store;
-import com.spring.delivery.domain.domain.entity.User;
+import com.spring.delivery.domain.controller.dto.order.OrderResponseDto;
+import com.spring.delivery.domain.domain.entity.*;
 import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
+import com.spring.delivery.domain.domain.repository.OrderRepository;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
@@ -39,10 +40,9 @@ class OrderServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(OrderServiceTest.class);
     private User user;
-    private UserDetails userDetails;
+    private UserDetailsImpl userDetails;
 
     private Store store;
-    private UUID storeId;
     private Menu menu;
 
     private Order order;
@@ -56,6 +56,8 @@ class OrderServiceTest {
 
     @Autowired
     private StoreRepository storeRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
     @BeforeAll
     void setUp() {
@@ -68,7 +70,7 @@ class OrderServiceTest {
         // 주문 테스트용 더미 가게
         store = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         store = storeRepository.save(store);
-        storeId = store.getId();
+        UUID storeId = store.getId();
 
         // 주문 테스트용 더미 메뉴
         MenuRequestDto menuRequestDto = new MenuRequestDto();
@@ -115,6 +117,30 @@ class OrderServiceTest {
     @DisplayName("주문 수정 성공")
     @Transactional
     void updateOrder() {
+        Order order = Order.builder()
+                .userId(user)
+                .address("testAddress")
+                .orderType("testOrderType")
+                .totalPrice(15000L)
+                .build();
+        order = orderRepository.save(order);
+
+        // given
+        // orderRequestDto 생성
+        OrderRequestDto orderRequestDto = new OrderRequestDto();
+        orderRequestDto.setUserId(user);
+        orderRequestDto.setAddress("updateAddress");
+        orderRequestDto.setOrderType("updateOrderType");
+        orderRequestDto.setTotalPrice(16000L);
+        orderRequestDto.setUpdateMenuIds(null);
+
+        ApiResponseDto<OrderResponseDto> orderResponse = orderService.updateOrder(order.getId(), orderRequestDto, userDetails);
+
+        assertNotNull(orderResponse);
+        assertEquals("updateAddress", orderResponse.getData().getAddress());
+        assertEquals("updateOrderType", orderResponse.getData().getOrderType());
+        assertEquals(16000L, orderResponse.getData().getTotalPrice());
+
     }
 
     @Test
@@ -122,6 +148,16 @@ class OrderServiceTest {
     @DisplayName("주문 삭제 성공")
     @Transactional
     void deleteOrder() {
+        Order order = Order.builder()
+                .userId(user)
+                .address("testAddress")
+                .orderType("testOrderType")
+                .totalPrice(15000L)
+                .build();
+        order = orderRepository.save(order);
+
+        ApiResponseDto orderResponse = orderService.deleteOrder(order.getId(), userDetails);
+        assertNotNull(orderResponse);
     }
 
     @Test
@@ -129,6 +165,21 @@ class OrderServiceTest {
     @DisplayName("주문 조회 성공")
     @Transactional
     void getOrder() {
+        Order order = Order.builder()
+                .userId(user)
+                .address("testAddress")
+                .orderType("testOrderType")
+                .totalPrice(15000L)
+                .build();
+        order = orderRepository.save(order);
+
+        ApiResponseDto<OrderMenuResponseDto> responseDto = orderService.getOrder(order.getId());
+
+        assertNotNull(responseDto);
+        assertEquals(user, responseDto.getData().getOrder().getUser());
+        assertEquals("testAddress", responseDto.getData().getOrder().getAddress());
+        assertEquals("testOrderType", responseDto.getData().getOrder().getOrderType());
+        assertEquals(15000L, responseDto.getData().getOrder().getTotalPrice());
     }
 
     @Test
@@ -136,5 +187,27 @@ class OrderServiceTest {
     @DisplayName("주문리스트 조회 성공")
     @Transactional
     void getOrders() {
+        for (int i=0; i<5; i++) {
+            Order order = Order.builder()
+                    .userId(user)
+                    .address("testAddress" + i)
+                    .orderType("testOrderType" + i)
+                    .totalPrice(15000L)
+                    .build();
+            orderRepository.save(order);
+        }
+
+        ApiResponseDto<List<OrderMenuResponseDto>> orders = orderService.getOrders(user.getId(), "testOrderType", "createdAt", "desc", 1, 3, userDetails);
+
+        assertNotNull(orders);
+
+    }
+
+    public UserDetails getUserDetails() {
+        return userDetails;
+    }
+
+    public void setUserDetails(UserDetailsImpl userDetails) {
+        this.userDetails = userDetails;
     }
 }
