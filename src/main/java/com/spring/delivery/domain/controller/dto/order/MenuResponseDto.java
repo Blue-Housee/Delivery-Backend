@@ -28,8 +28,8 @@ public class MenuResponseDto {
         this.name = menu.getName();
         this.price = menu.getPrice();
         this.description = menu.getDescription();
-        this.publicStatus = menu.isPublic_status();
-        this.menuImage = menu.getMenu_image();
+        this.publicStatus = menu.isPublicStatus();
+        this.menuImage = menu.getMenuImage();
         this.storeId = menu.getStore().getId();
         this.createdAt = menu.getCreatedAt();
         this.createdBy = menu.getCreatedBy();
