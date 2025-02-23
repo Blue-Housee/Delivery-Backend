@@ -15,7 +15,6 @@ public class DeliveryAddress extends BaseEntity {
     @Id
     @UuidGenerator
     private UUID id;
-
     private String address;
     private String request;
 

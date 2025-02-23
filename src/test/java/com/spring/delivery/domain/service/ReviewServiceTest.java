@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ class ReviewServiceTest {
         user = userRepository.save(user);
         userDetails = new UserDetailsImpl(user);
 
-        dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalDateTime.now(),LocalDateTime.now(), user);
+        dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
         dummyStoreId = dummyStore.getId();
     }
@@ -111,7 +112,7 @@ class ReviewServiceTest {
             reviewRepository.save(review);
         }
 
-        ReviewStoreResponseDto storeReviews = reviewService.getStoreReview(dummyStoreId, 0, 3);
+        ReviewStoreResponseDto storeReviews = reviewService.getStoreReview(dummyStoreId, 0, 3, "createdAt", "ESC");
         assertNotNull(storeReviews);
         assertEquals(0, storeReviews.getPage());
         assertEquals(3, storeReviews.getSize());
@@ -127,7 +128,8 @@ class ReviewServiceTest {
         createDto.setRating(3.5);
         createDto.setComment("Average product");
 
-        createDto.setOrderId(1L);
+        UUID id = UUID.randomUUID();
+        createDto.setOrderId(id);
         ReviewResponseDto createResponse = reviewService.createReview(dummyStoreId, createDto, userDetails);
         UUID reviewId = createResponse.getId();
 

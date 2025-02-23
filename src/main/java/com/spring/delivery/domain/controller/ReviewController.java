@@ -34,10 +34,12 @@ public class ReviewController {
     //상점의 리뷰 전체 검색(페이지네이션)
     @GetMapping("/stores/{storeId}/reviews")
     public ResponseEntity<ApiResponseDto> getStoreReview(@PathVariable UUID storeId,
-                                                         @RequestParam("page") int page,
-                                                         @RequestParam("size") int size
+                                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                                         @RequestParam(value = "size", defaultValue = "10") int size,
+                                                         @RequestParam(value = "orderby", defaultValue = "createdAt") String criteria,
+                                                         @RequestParam(value = "sort", defaultValue = "DESC") String sort
     ){
-        ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.getStoreReview(storeId, page, size));
+        ApiResponseDto apiResponseDto = ApiResponseDto.success(reviewService.getStoreReview(storeId, page, size, criteria, sort));
 
         return ResponseEntity.ok(apiResponseDto);
     }
