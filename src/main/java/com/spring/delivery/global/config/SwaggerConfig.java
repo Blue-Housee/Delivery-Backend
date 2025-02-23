@@ -27,68 +27,69 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-        @Bean
-        public GroupedOpenApi restApi(){ //rest controller
+    @Bean
+    public GroupedOpenApi restApi() { //rest controller
 
-                return GroupedOpenApi.builder()
-                        .pathsToMatch("/api/")
-                        .group("REST API")
-                        .build();
-        }
-        @Bean
-        public GroupedOpenApi commonApi() { //general controller
+        return GroupedOpenApi.builder()
+                .pathsToMatch("/api/")
+                .group("REST API")
+                .build();
+    }
 
-                return GroupedOpenApi.builder()
-                        .pathsToMatch("//")
-                        .pathsToExclude("/api/**/") //exclude that begin with '/api'
-                        .group("COMMON API")
-                        .build();
-        }
+    @Bean
+    public GroupedOpenApi commonApi() { //general controller
 
-        private SecurityScheme createAPIKeyScheme() {
-                return new SecurityScheme().type(SecurityScheme.Type.HTTP)
-                        .bearerFormat("JWT")
-                        .scheme("bearer");
-        }
+        return GroupedOpenApi.builder()
+                .pathsToMatch("//")
+                .pathsToExclude("/api/**/") //exclude that begin with '/api'
+                .group("COMMON API")
+                .build();
+    }
 
-        @Bean
-        public OpenAPI openAPI() {
-                return new OpenAPI().addSecurityItem(new SecurityRequirement().
-                                addList("Bearer Authentication"))
-                        .components(new Components().addSecuritySchemes
-                                ("Bearer Authentication", createAPIKeyScheme()))
-                        .info(new Info().title("My REST API")
-                                .description("Some custom description of API.")
-                                .version("1.0").contact(new Contact().name("Sallo Szrajbman")
-                                        .email( "www.baeldung.com").url("salloszraj@gmail.com"))
-                                .license(new License().name("License of API")
-                                        .url("API license URL")))
-                        .path("/api/user/signIn", new PathItem().post(
-                                new Operation()
-                                        .summary("로그인")
-                                        .description("Spring Security 필터를 통해 로그인 수행")
-                                        .tags(List.of("Auth"))
-                                        .requestBody(new RequestBody()
+    private SecurityScheme createAPIKeyScheme() {
+        return new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                .bearerFormat("JWT")
+                .scheme("bearer");
+    }
+
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI().addSecurityItem(new SecurityRequirement().
+                        addList("Bearer Authentication"))
+                .components(new Components().addSecuritySchemes
+                        ("Bearer Authentication", createAPIKeyScheme()))
+                .info(new Info().title("My REST API")
+                        .description("Some custom description of API.")
+                        .version("1.0").contact(new Contact().name("Sallo Szrajbman")
+                                .email("www.baeldung.com").url("salloszraj@gmail.com"))
+                        .license(new License().name("License of API")
+                                .url("API license URL")))
+                .path("/api/user/signIn", new PathItem().post(
+                        new Operation()
+                                .summary("로그인")
+                                .description("Spring Security 필터를 통해 로그인 수행")
+                                .tags(List.of("Auth"))
+                                .requestBody(new RequestBody()
+                                        .content(new Content().addMediaType("application/json",
+                                                new MediaType().schema(new Schema<SignInRequestDto>().example(new SignInRequestDto("testUser", "password123"))))))
+                                .responses(new ApiResponses()
+                                        .addApiResponse("200", new ApiResponse().description("로그인 성공")
                                                 .content(new Content().addMediaType("application/json",
-                                                        new MediaType().schema(new Schema<SignInRequestDto>().example(new SignInRequestDto("testUser", "password123"))))))
-                                        .responses(new ApiResponses()
-                                                .addApiResponse("200", new ApiResponse().description("로그인 성공")
-                                                        .content(new Content().addMediaType("application/json",
-                                                                new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
-                                                                        .example(new ApiResponseDto<>(
-                                                                                200,
-                                                                                "요청이 성공적으로 처리되었습니다.",
-                                                                                SignInResponseDto.builder().token("Bearer eygb...").build()
-                                                                        ))))))
-                                                .addApiResponse("401", new ApiResponse().description("로그인 실패")
-                                                        .content(new Content().addMediaType("application/json",
-                                                                new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
-                                                                        .example(new ApiResponseDto<>(
-                                                                                401,
-                                                                                "로그인 실패",
-                                                                                null
-                                                                        ))))))
-                                        )
-                        ));
-        }
+                                                        new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
+                                                                .example(new ApiResponseDto<>(
+                                                                        200,
+                                                                        "요청이 성공적으로 처리되었습니다.",
+                                                                        SignInResponseDto.builder().token("Bearer eygb...").build()
+                                                                ))))))
+                                        .addApiResponse("401", new ApiResponse().description("로그인 실패")
+                                                .content(new Content().addMediaType("application/json",
+                                                        new MediaType().schema(new Schema<ApiResponseDto<SignInResponseDto>>()
+                                                                .example(new ApiResponseDto<>(
+                                                                        401,
+                                                                        "로그인 실패",
+                                                                        null
+                                                                ))))))
+                                )
+                ));
+    }
 }

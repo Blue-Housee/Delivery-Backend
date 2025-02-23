@@ -73,10 +73,12 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size, //기본값 10
+            @RequestParam(value = "orderby", defaultValue = "createdAt") String criteria,
+            @RequestParam(value = "sort", defaultValue = "DESC") String sort,
             @RequestParam(value = "username", required = false) String username
     ) {
         // client 에서 1페이지 요청하면 0페이지를 반환하기 위해 page-1로 설정.
-        Page<User> userList = userService.searchUsers(userDetails, page-1, size, username);
+        Page<User> userList = userService.searchUsers(userDetails, page-1, size, criteria, sort, username);
         return ResponseEntity
                 .ok(
                         ApiResponseDto.success(
