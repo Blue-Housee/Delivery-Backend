@@ -1,7 +1,6 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
-import com.spring.delivery.domain.controller.dto.user.UserUpdateRequestDto;
+import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,7 +34,7 @@ public class UserService {
     @Value("${admin.token}")
     private String ADMIN_TOKEN;
 
-    public User signup(SignUpRequestDto requestDto) {
+    public SignUpResponseDto signup(SignUpRequestDto requestDto) {
         String username = requestDto.getUsername();
         String password = passwordEncoder.encode(requestDto.getPassword());
 
@@ -65,10 +65,13 @@ public class UserService {
         User user = User.createUser(username, email, password, role);
         userRepository.save(user);
 
-        return user;
+        return SignUpResponseDto
+                .builder()
+                .userId(user.getId())
+                .build();
     }
 
-    public User getUser(Long id, UserDetailsImpl userDetails) {
+    public UserDetailsResponseDto getUser(Long id, UserDetailsImpl userDetails) {
 
         User user = userRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
@@ -82,14 +85,19 @@ public class UserService {
                 currentUserRole == Role.MANAGER ||
                 currentUserRole == Role.MASTER
         ) {
-            return user;
+            return UserDetailsResponseDto
+                    .builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .build();
         }
 
         throw new AccessDeniedException("접근 권한이 없는 사용자입니다.");
     }
 
     @Transactional
-    public User updateUser(Long id, UserUpdateRequestDto requestDto, UserDetailsImpl userDetails) {
+    public UserDetailsResponseDto updateUser(Long id, UserUpdateRequestDto requestDto, UserDetailsImpl userDetails) {
 
         log.info(requestDto.toString());
         User user = userRepository.findById(id).orElseThrow(
@@ -146,11 +154,16 @@ public class UserService {
         );
 
         log.info(user.toString());
-        return user;
+        return UserDetailsResponseDto
+                .builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
     }
 
     @Transactional
-    public User deleteUser(Long id, UserDetailsImpl userDetails) {
+    public UserDeleteResponseDto deleteUser(Long id, UserDetailsImpl userDetails) {
         // 유저 존재 여부 확인
         User user = userRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
@@ -175,10 +188,13 @@ public class UserService {
         //삭제
         user.delete(currentUsername); // 삭제한 사람: 로그인한 사용자
 
-        return user;
+        return UserDeleteResponseDto
+                .builder()
+                .userId(user.getId())
+                .build();
     }
 
-    public Page<User> searchUsers(UserDetailsImpl userDetails, int page, int size, String criteria, String sort, String username) {
+    public UserPageResponseDto searchUsers(UserDetailsImpl userDetails, int page, int size, String criteria, String sort, String username) {
         //관리자 권한 확인(MANAGER, MASTER)
         if(userDetails.getUser().getRole() != Role.MANAGER && 
                 userDetails.getUser().getRole() != Role.MASTER
@@ -195,11 +211,31 @@ public class UserService {
         Pageable pageable = PageRequest.of(page, size, pageSort);
 
         // username 포함한 유저 검색
+        Page<User> userList;
         if (StringUtils.hasText(username)) {
-            Page<User> userList = userRepository.findAllByUsernameContains(username, pageable);
-            return userList;
+            userList = userRepository.findAllByUsernameContains(username, pageable);
         }
-        Page<User> userList = userRepository.findAll(pageable);
-        return userList;
+        else {
+            userList = userRepository.findAll(pageable);
+        }
+
+        return UserPageResponseDto.builder()
+                .page(userList.getNumber() + 1)
+                .size(userList.getSize())
+                .total(userList.getTotalPages())
+                .users(
+                        //리스트 형태로 넣기
+                        userList.stream()
+                                .map(user -> UserResponseDto.builder()
+                                        .userId(user.getId())
+                                        .username(user.getUsername())
+                                        .email(user.getEmail())
+                                        .role(user.getRole())
+                                        .deleted((user.getDeletedAt() != null))
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                )
+                .build();
     }
 }

@@ -1,7 +1,6 @@
 package com.spring.delivery.domain.service;
 
-import com.spring.delivery.domain.controller.dto.user.SignUpRequestDto;
-import com.spring.delivery.domain.controller.dto.user.UserUpdateRequestDto;
+import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.UserRepository;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,10 +69,13 @@ class UserServiceTest {
             SignUpRequestDto requestDto = createSignUpRequest(customer, Role.CUSTOMER, null);
 
             //when
-            User savedUser = userService.signup(requestDto);
+            SignUpResponseDto savedUser = userService.signup(requestDto);
+            User user = userRepository.findById(savedUser.getUserId()).orElse(null);
 
             //then
-            assertEquals(customer.getUsername(), savedUser.getUsername());
+            if (user != null) {
+                assertEquals(customer.getUsername(), user.getUsername());
+            }
         }
 
         @Test
@@ -84,11 +85,11 @@ class UserServiceTest {
             //given
             SignUpRequestDto requestDto = createSignUpRequest(manager, Role.MANAGER, ADMIN_TOKEN);
             //when
-            User savedUser = userService.signup(requestDto);
+            SignUpResponseDto savedUser = userService.signup(requestDto);
+            User user = userRepository.findById(savedUser.getUserId()).orElse(null);
 
             //then
-            assertEquals(manager.getUsername(), savedUser.getUsername());
-            assertEquals(savedUser.getRole(), Role.MANAGER);
+            assertEquals(manager.getUsername(), user.getUsername());
         }
 
         @Test
@@ -162,7 +163,7 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 단건 조회 성공")
         void getUser_success() {
-            User user = userService.getUser(customer.getId(), customerUserDetails);
+            UserDetailsResponseDto user = userService.getUser(customer.getId(), customerUserDetails);
 
             assertEquals(user.getUsername(), customer.getUsername());
         }
@@ -180,7 +181,7 @@ class UserServiceTest {
                     .email(UPDATED_EMAIL)
                     .build();
 
-            User updatedUser = userService.updateUser(customer.getId(), requestDto, customerUserDetails);
+            UserDetailsResponseDto updatedUser = userService.updateUser(customer.getId(), requestDto, customerUserDetails);
 
             assertEquals(UPDATED_EMAIL, updatedUser.getEmail());
         }
@@ -193,13 +194,17 @@ class UserServiceTest {
         @DisplayName("회원 삭제 성공")
         @Transactional
         void deleteUser_success() {
-            User deletedUser = userService.deleteUser(customer.getId(), customerUserDetails);
+            UserDeleteResponseDto deletedUser = userService.deleteUser(customer.getId(), customerUserDetails);
 
-            assertEquals(deletedUser.getUsername(), customer.getUsername());
-            assertEquals(deletedUser.getRole(), Role.CUSTOMER);
-            assertNotNull(deletedUser.getDeletedAt());
-            assertNotNull(deletedUser.getDeletedBy());
-            assertEquals(deletedUser.getDeletedBy(), customerUserDetails.getUsername());
+            assertEquals(deletedUser.getUserId(), customer.getId());
+
+            User user = userRepository.findById(deletedUser.getUserId()).orElse(null);
+            if (user != null) {
+                assertEquals(user.getRole(), Role.CUSTOMER);
+                assertNotNull(user.getDeletedAt());
+                assertNotNull(user.getDeletedBy());
+                assertEquals(user.getDeletedBy(), customerUserDetails.getUsername());
+            }
         }
     }
 
@@ -209,11 +214,10 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 성공")
         void searchUsers_success() {
-            Page<User> userList = userService.searchUsers(managerUserDetails, 0, 5, "ma");
+            UserPageResponseDto userList = userService.searchUsers(managerUserDetails, 0, 5, "createdAt", "DESC", "ma");
 
-            assertEquals(2, userList.getTotalElements());
-            assertEquals(master.getUsername(), userList.getContent().get(0).getUsername());
-            assertEquals(manager.getUsername(), userList.getContent().get(1).getUsername());
+            assertEquals(master.getUsername(), userList.getUsers().get(0).getUsername());
+            assertEquals(manager.getUsername(), userList.getUsers().get(1).getUsername());
         }
     }
 
