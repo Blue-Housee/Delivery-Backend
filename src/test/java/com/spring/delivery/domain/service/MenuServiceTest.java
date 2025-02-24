@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
 import com.spring.delivery.domain.controller.dto.menu.MenuResponseDto;
@@ -23,13 +24,7 @@ import java.util.UUID;
 import static com.spring.delivery.domain.domain.entity.User.createUser;
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@ActiveProfiles("test")
-class MenuServiceTest {
+class MenuServiceTest extends IntegrationTestBase {
 
     @Autowired
     MenuService menuService;
@@ -43,36 +38,19 @@ class MenuServiceTest {
     @Autowired
     UserRepository userRepository;
 
-    User ownerUser;
-    User customerUser;
-    UserDetailsImpl ownerUserDetails;
-    UserDetailsImpl customerUserDetails;
+    @Test
+    @DisplayName("신규 메뉴 등록")
+    void testSuccessCreateMenu() {
+        //UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture2(Role.OWNER);
+        //User user = userDetails.getUser();
 
-    Store store;
-    MenuResponseDto createdMenu = null;
-    Menu testMenu;
+        User ownerUser = userRepository.findByEmail("owner2@email.com")
+                .orElseGet(() ->
+                        userRepository.save(createUser("owner2","owner2@eamil.com","1234", Role.OWNER))
+                );
+        UserDetailsImpl ownerUserDetails = new UserDetailsImpl(ownerUser);
 
-    @BeforeEach
-    void setUp() {
-
-        // 테스트용 유저 생성
-        ownerUser = userRepository.findByEmail("owner2@email.com")
-                .orElseGet(() -> {
-                    User ownerUser2 = createUser("owner2","owner2@eamil.com","1234", Role.OWNER);
-                    return userRepository.save(ownerUser2);
-                });
-
-        customerUser = userRepository.findByEmail("customer2@email.com")
-                .orElseGet(() -> {
-                    User customerUser2 = createUser("customer2","customer2@eamil.com","1234", Role.CUSTOMER);
-                    return userRepository.save(customerUser2);
-                });
-
-        ownerUserDetails = new UserDetailsImpl(ownerUser);
-        customerUserDetails = new UserDetailsImpl(customerUser);
-
-        // 테스트를 위한 스토어 생성
-        store = Store.of(
+        Store store = Store.of(
                 "테스트 가게",
                 "테스트 주소",
                 "010-1234-5678",
@@ -81,26 +59,8 @@ class MenuServiceTest {
                 LocalTime.now(),
                 ownerUser
                 );
-        storeRepository.save(store);
+        store = storeRepository.save(store);
 
-
-        testMenu = menuRepository.save(Menu.of(
-                MenuRequestDto.of(
-                        "테스트메뉴",
-                        10000L,
-                        "테스트메뉴입니다.",
-                        "image.jpg",
-                        true,
-                        store.getId()),
-                store
-        ));
-    }
-
-    @Test
-    @Order(1)
-    @Transactional
-    @DisplayName("신규 메뉴 등록")
-    void testSuccessCreateMenu() {
         // given
         String name = "테스트 메뉴";
         Long price = 15000L;
@@ -128,15 +88,32 @@ class MenuServiceTest {
         assertEquals(menuImage, menu.getMenuImage());
         assertEquals(publicStatus, menu.getPublicStatus());
         assertEquals(store.getId(), menu.getStoreId());
-
-        createdMenu = menu;
     }
 
     @Test
-    @Order(2)
-    @Transactional
     @DisplayName("신규 메뉴 등록 실패-권한없음")
     void testFailCreateMenu() {
+        User ownerUser = userRepository.findByEmail("owner2@email.com")
+                .orElseGet(() ->
+                        userRepository.save(createUser("owner2","owner2@eamil.com","1234", Role.OWNER))
+                );
+        UserDetailsImpl ownerUserDetails = new UserDetailsImpl(ownerUser);
+
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
+
+        // 테스트를 위한 스토어 생성
+        Store store = Store.of(
+                "테스트 가게",
+                "테스트 주소",
+                "010-1234-5678",
+                true,
+                LocalTime.now(),
+                LocalTime.now(),
+                ownerUser
+        );
+        store = storeRepository.save(store);
+
         // given
         MenuRequestDto requestDto = MenuRequestDto.of(
                 "테스트 메뉴",
@@ -148,7 +125,7 @@ class MenuServiceTest {
         );
 
         // when
-        ApiResponseDto<MenuResponseDto> response = menuService.createMenu(requestDto, customerUserDetails);
+        ApiResponseDto<MenuResponseDto> response = menuService.createMenu(requestDto, userDetails);
 
         // then
         assertEquals(403, response.getStatus());
@@ -157,10 +134,35 @@ class MenuServiceTest {
     }
 
     @Test
-    @Order(3)
-    @Transactional
     @DisplayName("메뉴 수정 성공")
     void testSuccessUpdateMenu() {
+        User ownerUser = userRepository.findByEmail("owner2@email.com")
+                .orElseGet(() ->
+                        userRepository.save(createUser("owner2","owner2@eamil.com","1234", Role.OWNER))
+                );
+        UserDetailsImpl ownerUserDetails = new UserDetailsImpl(ownerUser);
+
+        Store store = Store.of(
+                "테스트 가게",
+                "테스트 주소",
+                "010-1234-5678",
+                true,
+                LocalTime.now(),
+                LocalTime.now(),
+                ownerUser
+        );
+        store = storeRepository.save(store);
+
+        Menu testMenu = menuRepository.save(Menu.of(
+                MenuRequestDto.of(
+                        "테스트메뉴",
+                        10000L,
+                        "테스트메뉴입니다.",
+                        "image.jpg",
+                        true,
+                        store.getId()),
+                store
+        ));
         // given
         UUID menuId = testMenu.getId();
         String updatedName = "수정된 메뉴";
@@ -194,9 +196,35 @@ class MenuServiceTest {
 
 
     @Test
-    @Order(4)
     @DisplayName("메뉴 상세 조회 성공")
     void testGetMenuDetail() {
+        User ownerUser = userRepository.findByEmail("owner2@email.com")
+                .orElseGet(() ->
+                        userRepository.save(createUser("owner2","owner2@eamil.com","1234", Role.OWNER))
+                );
+        UserDetailsImpl ownerUserDetails = new UserDetailsImpl(ownerUser);
+
+        Store store = Store.of(
+                "테스트 가게",
+                "테스트 주소",
+                "010-1234-5678",
+                true,
+                LocalTime.now(),
+                LocalTime.now(),
+                ownerUser
+        );
+        store = storeRepository.save(store);
+
+        Menu testMenu = menuRepository.save(Menu.of(
+                MenuRequestDto.of(
+                        "테스트메뉴",
+                        10000L,
+                        "테스트메뉴입니다.",
+                        "image.jpg",
+                        true,
+                        store.getId()),
+                store
+        ));
         // given
         UUID id = testMenu.getId();
 
