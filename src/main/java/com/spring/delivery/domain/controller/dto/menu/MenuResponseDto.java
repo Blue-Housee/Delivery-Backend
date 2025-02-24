@@ -1,10 +1,7 @@
 package com.spring.delivery.domain.controller.dto.menu;
 
 import com.spring.delivery.domain.domain.entity.Menu;
-<<<<<<< HEAD
-=======
 import lombok.Builder;
->>>>>>> 13da6d5d308f526412fd69768e96ffa253678f7b
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +24,6 @@ public class MenuResponseDto {
     private String createdBy;
 
 
-<<<<<<< HEAD
     private MenuResponseDto(Menu menu) {
         this.id = menu.getId();
         this.name = menu.getName();
@@ -40,9 +36,6 @@ public class MenuResponseDto {
         this.createdBy = menu.getCreatedBy();
     }
 
-    public static MenuResponseDto from(Menu menu) {
-        return new MenuResponseDto(menu);
-=======
     @Builder
     private MenuResponseDto(UUID id, String name, Long price, String description, Boolean publicStatus, String menuImage, UUID storeId, LocalDateTime createdAt, String createdBy) {
         this.id = id;
@@ -54,6 +47,7 @@ public class MenuResponseDto {
         this.storeId = storeId;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
+
     }
 
     public static MenuResponseDto from(Menu menu) {
@@ -68,7 +62,5 @@ public class MenuResponseDto {
                 .createdAt(menu.getCreatedAt())
                 .createdBy(menu.getCreatedBy())
                 .build();
->>>>>>> 13da6d5d308f526412fd69768e96ffa253678f7b
     }
-
 }
