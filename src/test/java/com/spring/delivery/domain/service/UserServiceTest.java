@@ -3,9 +3,12 @@ package com.spring.delivery.domain.service;
 import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
-import com.spring.delivery.domain.domain.repository.*;
+import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,15 +16,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 class UserServiceTest {
 
     @Autowired
@@ -41,8 +41,9 @@ class UserServiceTest {
     private static String UPDATED_EMAIL = "updated@test.com";
 
     @BeforeEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();  // 테스트 시작 전에 SecurityContext 초기화
+    void TearDown() {
+        SecurityContextHolder.clearContext();  // 테스트 시작 후에 SecurityContext 초기화
+        userRepository.deleteAll();
     }
 
     @Nested
