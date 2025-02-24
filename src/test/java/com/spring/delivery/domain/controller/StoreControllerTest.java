@@ -115,7 +115,8 @@ class StoreControllerTest {
                 true,            // 운영 상태
                 List.of("카테고리 1", "카테고리 2"), // 카테고리 리스트
                 LocalTime.of(9, 0),  // 시작 시간
-                LocalTime.of(22, 0)  // 종료 시간
+                LocalTime.of(22, 0), // 종료 시간
+                4.5 // 평균 평점 더미 데이터 추가
         );
 
         StoreListResponseDto store2 = new StoreListResponseDto(
@@ -126,13 +127,15 @@ class StoreControllerTest {
                 true,            // 운영 상태
                 List.of("카테고리 1"), // 카테고리 리스트
                 LocalTime.of(10, 0),  // 시작 시간
-                LocalTime.of(21, 0)   // 종료 시간
+                LocalTime.of(21, 0),   // 종료 시간
+                3.8 // 평균 평점 더미 데이터 추가
         );
 
         // PageImpl을 사용하여 페이지 객체 생성
         Page<StoreListResponseDto> page = new PageImpl<>(List.of(store1, store2), PageRequest.of(0, 10), 2);
         ApiResponseDto<Page<StoreListResponseDto>> responseDto = ApiResponseDto.success(page); // 페이지 초기화
 
+        // StoreService의 메서드 모킹
         when(storeService.getAllStores(any(int.class), any(int.class), any(String.class), any(boolean.class)))
                 .thenReturn(responseDto);
 
@@ -142,8 +145,12 @@ class StoreControllerTest {
                 // Then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.content[0].name").value(store1.getName())); // 첫 번째 스토어 이름 확인
+                .andExpect(jsonPath("$.data.content[0].name").value(store1.getName())) // 첫 번째 스토어 이름 확인
+                .andExpect(jsonPath("$.data.content[0].averageRating").value(4.5)) // 평균 평점 확인
+                .andExpect(jsonPath("$.data.content[1].name").value(store2.getName())) // 두 번째 스토어 이름 확인
+                .andExpect(jsonPath("$.data.content[1].averageRating").value(3.8)); // 평균 평점 확인
     }
+
 
     @WithMockUser(username = "test")
     @DisplayName("스토어 단건 조회 테스트")
