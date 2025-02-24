@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -25,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ReviewServiceTest {
 
     @Autowired
@@ -40,29 +38,24 @@ class ReviewServiceTest {
     @Autowired
     private StoreRepository storeRepository;
 
-    private User user;
-    private UserDetailsImpl userDetails;
 
-    private Store dummyStore;
-    private UUID dummyStoreId;
-
-    @BeforeAll
-    void setUp() {
+    @AfterEach
+    void tearDown() {
+        reviewRepository.deleteAll();
+        storeRepository.deleteAll();
         userRepository.deleteAll();
-        user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        userDetails = new UserDetailsImpl(user);
-
-        dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
-        dummyStore = storeRepository.save(dummyStore);
-        dummyStoreId = dummyStore.getId();
     }
-
     @Test
-    @Order(1)
     @DisplayName("리뷰 생성 성공")
-    @Transactional
     void createReview_success() {
+        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
+        user = userRepository.save(user);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
+        dummyStore = storeRepository.save(dummyStore);
+        UUID dummyStoreId = dummyStore.getId();
+
         ReviewRequestDto requestDto = new ReviewRequestDto();
         requestDto.setRating(5.0);
         requestDto.setComment("Excellent service");
@@ -76,16 +69,23 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Order(2)
     @DisplayName("리뷰 단건 검색 성공")
-    @Transactional
     void getReviewDetails_success() {
+        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
+        user = userRepository.save(user);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
+        dummyStore = storeRepository.save(dummyStore);
+        UUID dummyStoreId = dummyStore.getId();
+
         Review review = Review.builder()
                 .score(4.5)
                 .contents("Good product")
                 .user(user)
                 .store(dummyStore) // 더미 store 할당
                 .build();
+
         review = reviewRepository.save(review);
 
         ReviewDetailsResponseDto details = reviewService.getReviewDetails(review.getId());
@@ -98,10 +98,16 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Order(3)
     @DisplayName("상점 리뷰 전체 검색 성공")
-    @Transactional
     void getStoreReview_success() {
+        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
+        user = userRepository.save(user);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
+        dummyStore = storeRepository.save(dummyStore);
+        UUID dummyStoreId = dummyStore.getId();
+
         for (int i = 0; i < 5; i++) {
             Review review = Review.builder()
                     .score(0.0+i)
@@ -120,10 +126,16 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Order(4)
     @DisplayName("리뷰 수정 성공")
-    @Transactional
     void updateReview_success() {
+        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
+        user = userRepository.save(user);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
+        dummyStore = storeRepository.save(dummyStore);
+        UUID dummyStoreId = dummyStore.getId();
+
         ReviewRequestDto createDto = new ReviewRequestDto ();
         createDto.setRating(3.5);
         createDto.setComment("Average product");
@@ -145,10 +157,16 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Order(5)
     @DisplayName("리뷰 삭제 성공")
-    @Transactional
     void deleteReview_success() {
+        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
+        user = userRepository.save(user);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
+        dummyStore = storeRepository.save(dummyStore);
+        UUID dummyStoreId = dummyStore.getId();
+
         ReviewRequestDto createDto = new ReviewRequestDto();
         createDto.setRating(2);
         createDto.setComment("Not satisfied");

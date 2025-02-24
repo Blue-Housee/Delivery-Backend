@@ -13,7 +13,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,7 +71,7 @@ class UserServiceTest {
     class SignUp {
         @BeforeAll
         void init() {
-            userRepository.deleteAll();  // 기존 데이터 초기화
+            userRepository.deleteAll();// 기존 데이터 초기화
         }
 
         @Test
