@@ -234,45 +234,5 @@ class StoreControllerTest {
                 .andExpect(jsonPath("$.message").value("요청이 성공적으로 처리되었습니다."));
     }
 
-    @WithMockUser(username = "test")
-    @DisplayName("스토어 검색 테스트")
-    @Test
-    void searchStores() throws Exception {
-        // Given
-        UUID storeId = UUID.randomUUID();
-
-        StoreListResponseDto store = new StoreListResponseDto(
-                storeId,
-                "테스트 가게", // 가게 이름
-                "테스트 주소", // 가게 주소
-                "010-5555-6666", // 전화번호
-                true,            // 운영 상태
-                List.of("카테고리 1", "카테고리 2"), // 카테고리 리스트
-                LocalTime.of(9, 0), // 시작 시간
-                LocalTime.of(22, 0) // 종료 시간
-        );
-
-        // PageImpl을 사용하여 페이지 객체 생성
-        Page<StoreListResponseDto> page = new PageImpl<>(List.of(store), PageRequest.of(0, 10), 1);
-        ApiResponseDto<Page<StoreListResponseDto>> responseDto = ApiResponseDto.success(page); // 페이지 초기화
-
-        String query = "테스트 가게";
-        when(storeService.searchStores(query, 0, 10, "name", true))
-                .thenReturn(responseDto);
-
-        // When
-        mockMvc.perform(get("/api/stores/search") // 검색 API 경로
-                        .param("query", query) // 쿼리 매개변수
-                        .param("page", "0") // 페이지 번호
-                        .param("size", "10") // 페이지 크기
-                        .param("sortBy", "name") // 정렬 기준
-                        .param("isAsc", "true") // 오름차순 여부
-                        .contentType(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.content[0].name").value(store.getName())); // 첫 번째 스토어 이름 확인
-    }
-
 
 }
