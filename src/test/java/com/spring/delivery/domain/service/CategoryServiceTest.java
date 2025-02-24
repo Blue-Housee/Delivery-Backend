@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryListResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryRequestDto;
@@ -14,17 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CategoryServiceTest {
+
+class CategoryServiceTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;
@@ -35,27 +33,14 @@ class CategoryServiceTest {
     @Autowired
     private CategoryService categoryService;
 
-    private UserDetailsImpl masterUserDetails;
-    private UserDetailsImpl customerUserDetails;
-
-    @BeforeEach
-    void setUp() {
-        categoryRepository.deleteAll();
-        userRepository.deleteAll();
-
-        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
-        userRepository.save(masterUser);
-        masterUserDetails = new UserDetailsImpl(masterUser);
-
-        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
-        userRepository.save(customerUser);
-        customerUserDetails = new UserDetailsImpl(customerUser);
-    }
-
     @Test
     @DisplayName("카테고리 생성 - 권한 있음")
-    @Transactional
     void testCreateCategorySuccess() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -73,8 +58,12 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 생성 - 권한 없음")
-    @Transactional
     void testCreateCategoryFailDueToInsufficientPermissions() {
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -88,8 +77,12 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 조회 - 전체 목록")
-    @Transactional
     void testGetAllCategories() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
         for (int i = 1; i <= 5; i++) {
             CategoryRequestDto createRequest = CategoryRequestDto.builder()
                     .name("테스트 카테고리 " + i)
@@ -108,8 +101,12 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 수정 - 권한 있음")
-    @Transactional
     void testUpdateCategorySuccess() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -133,8 +130,17 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 수정 - 권한 없음")
-    @Transactional
     void testUpdateCategoryFailDueToInsufficientPermissions() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -155,8 +161,12 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 삭제 - 권한 있음")
-    @Transactional
     void testDeleteCategorySuccess() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -181,8 +191,17 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("카테고리 삭제 - 권한 없음")
-    @Transactional
     void testDeleteCategoryFailDueToInsufficientPermissions() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
         CategoryRequestDto requestDto = CategoryRequestDto.builder()
                 .name("테스트 카테고리")
                 .build();
@@ -204,6 +223,4 @@ class CategoryServiceTest {
         assertNotNull(existingCategory); // 카테고리는 여전히 존재해야 함
         assertNull(existingCategory.getDeletedAt()); // 삭제되지 않아야 함
     }
-
-
 }

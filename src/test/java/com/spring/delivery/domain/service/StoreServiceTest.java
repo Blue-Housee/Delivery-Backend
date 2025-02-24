@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.store.*;
 import com.spring.delivery.domain.domain.entity.Category;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -25,11 +25,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class StoreServiceTest {
+
+class StoreServiceTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;
@@ -46,63 +43,41 @@ class StoreServiceTest {
     @Autowired
     private StoreService storeService;
 
-    private UserDetailsImpl masterUserDetails;
-    private UserDetailsImpl customerUserDetails;
-    private StoreCreateRequestDto requestDto;
-    private Category testCategory;
-    private UUID testCategoryId;
 
-    @BeforeAll
-    void beforeAll() {
-
-        storeCategoryRepository.deleteAll();
-        categoryRepository.deleteAll();
-        storeRepository.deleteAll();
-        userRepository.deleteAll();
-    }
-    @BeforeEach
-    void setUp() {
+    @Test
+    @DisplayName("가게 등록 - 권한 있음")
+    void testStoreCreationSuccess() {
         // MASTER 권한을 가진 유저 생성
         User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
         userRepository.save(masterUser);
-        masterUserDetails = new UserDetailsImpl(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
 
         // CUSTOMER 권한을 가진 유저 생성
         User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
         userRepository.save(customerUser);
-        customerUserDetails = new UserDetailsImpl(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
 
         // 테스트용 카테고리 생성
-        testCategory = Category.of("testcategory");
+        Category testCategory = Category.of("testcategory");
         testCategory = categoryRepository.save(testCategory);
-        testCategoryId = testCategory.getId();
-    }
+        UUID testCategoryId = testCategory.getId();
 
-    @Test
-    @Order(1)
-    @Transactional
-    @DisplayName("가게 등록 - 권한 있음")
-    void testStoreCreationSuccess() {
-        // 요청 DTO 생성
-        requestDto = new StoreCreateRequestDto(
+        StoreCreateRequestDto requestDto = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
                 "테스트 주소",
                 "010-1234-5678",
                 true,
-                LocalTime.of(9, 0),  // 09:00
-                LocalTime.of(22, 0)  // 22:00
+                LocalTime.of(9, 0),
+                LocalTime.of(22, 0)
         );
 
-        // 가게 생성 메서드 호출
         ApiResponseDto response = storeService.createStore(masterUserDetails, requestDto);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertEquals("요청이 성공적으로 처리되었습니다.", response.getMessage());
 
-        // 데이터베이스에서 가게 조회
         UUID storeId = (UUID) response.getData();
         Store createdStore = storeRepository.findById(storeId).orElse(null);
         assertNotNull(createdStore);
@@ -113,7 +88,6 @@ class StoreServiceTest {
         assertEquals(requestDto.getStartTime(), createdStore.getStartTime());
         assertEquals(requestDto.getEndTime(), createdStore.getEndTime());
 
-        // 카테고리 검증
         List<StoreCategory> storeCategories = storeCategoryRepository.findByStoreId(storeId);
         assertNotNull(storeCategories);
         assertEquals(1, storeCategories.size());
@@ -121,12 +95,24 @@ class StoreServiceTest {
     }
 
     @Test
-    @Order(2)
-    @Transactional
     @DisplayName("가게 등록 - 권한 없음")
     void testStoreCreationFailDueToInsufficientPermissions() {
-        // 요청 DTO 생성
-        requestDto = new StoreCreateRequestDto(
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
+        StoreCreateRequestDto requestDto = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
                 "테스트 주소",
@@ -136,21 +122,27 @@ class StoreServiceTest {
                 LocalTime.of(22, 0)
         );
 
-        // 권한이 없는 유저로 가게 생성 메서드 호출
         ApiResponseDto response = storeService.createStore(customerUserDetails, requestDto);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(403, response.getStatus());
         assertEquals("가게를 등록할 권한이 없습니다.", response.getMessage());
     }
 
     @Test
-    @Order(3)
-    @Transactional
     @DisplayName("가게 조회 - 전체 목록")
     void testGetAllStores() {
-        StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
+        StoreCreateRequestDto createRequest1 = new StoreCreateRequestDto(
                 "테스트 가게 1",
                 List.of(testCategoryId),
                 "테스트 주소 1",
@@ -160,9 +152,9 @@ class StoreServiceTest {
                 LocalTime.of(22, 0)
         );
 
-        storeService.createStore(masterUserDetails, createRequest);
+        storeService.createStore(masterUserDetails, createRequest1);
 
-        createRequest = new StoreCreateRequestDto(
+        StoreCreateRequestDto createRequest2 = new StoreCreateRequestDto(
                 "테스트 가게 2",
                 List.of(testCategoryId),
                 "테스트 주소 2",
@@ -172,18 +164,15 @@ class StoreServiceTest {
                 LocalTime.of(21, 0)
         );
 
-        storeService.createStore(masterUserDetails, createRequest);
+        storeService.createStore(masterUserDetails, createRequest2);
 
-        // 가게 목록 조회 메서드 호출
         ApiResponseDto<Page<StoreListResponseDto>> response = storeService.getAllStores(0, 10, "createdAt", true);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
-        assertTrue(response.getData().getContent().size() > 0); // 가게가 있어야 함
+        assertTrue(response.getData().getContent().size() > 0);
 
-        // 첫 번째 가게 검증
         StoreListResponseDto firstStore = response.getData().getContent().get(0);
         assertNotNull(firstStore);
         assertEquals("테스트 가게 1", firstStore.getName());
@@ -193,10 +182,18 @@ class StoreServiceTest {
     }
 
     @Test
-    @Order(4)
-    @Transactional
     @DisplayName("가게 조회 - 특정 가게 ID로 조회")
     void testGetStoreById() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
         StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
@@ -208,12 +205,10 @@ class StoreServiceTest {
         );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = createResponse.getData(); // 생성된 가게 ID
+        UUID storeId = createResponse.getData();
 
-        // 가게 ID로 조회 메서드 호출
         ApiResponseDto<StoreDetailResponseDto> response = storeService.getStoreById(storeId);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
@@ -227,10 +222,18 @@ class StoreServiceTest {
     }
 
     @Test
-    @Order(5)
-    @Transactional
     @DisplayName("가게 수정 - 권한 있음")
     void testUpdateStoreSuccess() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
         StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
@@ -244,21 +247,18 @@ class StoreServiceTest {
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData();
 
-        // 수정할 요청 DTO 생성
         StoreUpdateRequestDto updateRequest = new StoreUpdateRequestDto(
                 "수정된 가게 이름",
-                List.of(testCategoryId), // 카테고리는 유지
+                List.of(testCategoryId),
                 "수정된 주소",
                 "010-9999-0000",
-                true, // openStatus 유지
-                LocalTime.of(10, 0), // 수정된 시작 시간
-                LocalTime.of(21, 0)   // 수정된 종료 시간
+                true,
+                LocalTime.of(10, 0),
+                LocalTime.of(21, 0)
         );
 
-        // 가게 수정 메서드 호출
         ApiResponseDto<StoreUpdateResponseDto> response = storeService.updateStore(masterUserDetails, storeId, updateRequest);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
@@ -273,10 +273,23 @@ class StoreServiceTest {
     }
 
     @Test
-    @Order(6)
-    @Transactional
     @DisplayName("가게 수정 - 권한 없음")
     void testUpdateStoreFailDueToInsufficientPermissions() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
         StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
@@ -290,7 +303,6 @@ class StoreServiceTest {
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
         UUID storeId = createResponse.getData();
 
-        // 수정할 요청 DTO 생성
         StoreUpdateRequestDto updateRequest = new StoreUpdateRequestDto(
                 "수정된 가게 이름",
                 List.of(testCategoryId),
@@ -301,20 +313,26 @@ class StoreServiceTest {
                 LocalTime.of(21, 0)
         );
 
-        // 권한이 없는 유저로 가게 수정 메서드 호출
         ApiResponseDto response = storeService.updateStore(customerUserDetails, storeId, updateRequest);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(403, response.getStatus());
         assertEquals("가게를 수정할 권한이 없습니다.", response.getMessage());
     }
 
     @Test
-    @Order(7)
-    @Transactional
     @DisplayName("가게 삭제 - 권한 있음")
     void testDeleteStoreSuccess() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
         StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
@@ -326,27 +344,37 @@ class StoreServiceTest {
         );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = createResponse.getData(); // 생성된 가게 ID
+        UUID storeId = createResponse.getData();
 
-        // 가게 삭제 메서드 호출
         ApiResponseDto response = storeService.deleteStore(masterUserDetails, storeId);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertEquals("요청이 성공적으로 처리되었습니다.", response.getMessage());
 
-        // 데이터베이스에서 가게 조회 후 삭제 여부 확인
         Store deletedStore = storeRepository.findById(storeId).orElse(null);
         assertNotNull(deletedStore);
-        assertNotNull(deletedStore.getDeletedAt()); // 삭제된 가게의 deletedAt이 설정되어 있어야 함
+        assertNotNull(deletedStore.getDeletedAt());
     }
 
     @Test
-    @Order(8)
-    @Transactional
     @DisplayName("가게 삭제 - 권한 없음")
     void testDeleteStoreFailDueToInsufficientPermissions() {
+        // MASTER 권한을 가진 유저 생성
+        User masterUser = User.createUser("masterUser", "masterUser@example.com", "password", Role.MASTER);
+        userRepository.save(masterUser);
+        UserDetailsImpl masterUserDetails = new UserDetailsImpl(masterUser);
+
+        // CUSTOMER 권한을 가진 유저 생성
+        User customerUser = User.createUser("customerUser", "customerUser@example.com", "password", Role.CUSTOMER);
+        userRepository.save(customerUser);
+        UserDetailsImpl customerUserDetails = new UserDetailsImpl(customerUser);
+
+        // 테스트용 카테고리 생성
+        Category testCategory = Category.of("testcategory");
+        testCategory = categoryRepository.save(testCategory);
+        UUID testCategoryId = testCategory.getId();
+
         StoreCreateRequestDto createRequest = new StoreCreateRequestDto(
                 "테스트 가게",
                 List.of(testCategoryId),
@@ -358,16 +386,13 @@ class StoreServiceTest {
         );
 
         ApiResponseDto<UUID> createResponse = storeService.createStore(masterUserDetails, createRequest);
-        UUID storeId = createResponse.getData(); // 생성된 가게 ID
+        UUID storeId = createResponse.getData();
 
-        // 권한이 없는 유저로 가게 삭제 메서드 호출
         ApiResponseDto response = storeService.deleteStore(customerUserDetails, storeId);
 
-        // 결과 검증
         assertNotNull(response);
         assertEquals(403, response.getStatus());
         assertEquals("가게를 삭제할 권한이 없습니다.", response.getMessage());
     }
-
 }
 

@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class UserServiceTest {
+class UserServiceTest extends IntegrationTestBase {
 
     @Autowired
     private UserService userService;
@@ -41,9 +42,8 @@ class UserServiceTest {
     private static String UPDATED_EMAIL = "updated@test.com";
 
     @BeforeEach
-    void TearDown() {
-        SecurityContextHolder.clearContext();  // 테스트 시작 후에 SecurityContext 초기화
-        userRepository.deleteAll();
+    void SetSecurityContextHolder() {
+        SecurityContextHolder.clearContext();  // 테스트 시작 전에 SecurityContext 초기화
     }
 
     @Nested
