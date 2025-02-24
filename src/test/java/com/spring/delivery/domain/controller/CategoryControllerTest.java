@@ -46,8 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Transactional
 class CategoryControllerTest {
-
-
     @Autowired
     private MockMvc mockMvc;
 

@@ -24,6 +24,7 @@ import java.util.UUID;
 import static com.spring.delivery.domain.domain.entity.User.createUser;
 import static org.junit.jupiter.api.Assertions.*;
 
+
 class MenuServiceTest extends IntegrationTestBase {
 
     @Autowired

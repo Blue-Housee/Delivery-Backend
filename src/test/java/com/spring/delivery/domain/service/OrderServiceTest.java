@@ -52,8 +52,6 @@ class OrderServiceTest {
     @DisplayName("주문 생성 성공")
     @Transactional
      void createOrder() {
-        // 테스트용 master 계정 생성
-        userRepository.deleteAll();
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
@@ -87,8 +85,6 @@ class OrderServiceTest {
     @DisplayName("주문 수정 성공")
     @Transactional
     void updateOrder() {
-        // 테스트용 master 계정 생성
-        userRepository.deleteAll();
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
@@ -145,12 +141,9 @@ class OrderServiceTest {
     @DisplayName("주문 조회 성공")
     @Transactional
     void getOrder() {
-        // 테스트용 master 계정 생성
-        userRepository.deleteAll();
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
-
         Order order = Order.builder()
                 .userId(user)
                 .address("testAddress")
@@ -172,8 +165,6 @@ class OrderServiceTest {
     @DisplayName("주문리스트 조회 성공")
     @Transactional
     void getOrders() {
-        // 테스트용 master 계정 생성
-        userRepository.deleteAll();
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
@@ -192,5 +183,4 @@ class OrderServiceTest {
 
         assertNotNull(orders);
     }
-
 }
