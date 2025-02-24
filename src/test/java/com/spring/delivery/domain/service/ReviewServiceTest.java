@@ -1,30 +1,23 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.review.*;
 import com.spring.delivery.domain.domain.entity.Review;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.entity.User;
-import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.ReviewRepository;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
 import java.time.LocalTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ReviewServiceTest {
+class ReviewServiceTest extends IntegrationTestBase {
 
     @Autowired
     private ReviewService reviewService;
@@ -39,18 +32,12 @@ class ReviewServiceTest {
     private StoreRepository storeRepository;
 
 
-    @AfterEach
-    void tearDown() {
-        reviewRepository.deleteAll();
-        storeRepository.deleteAll();
-        userRepository.deleteAll();
-    }
     @Test
     @DisplayName("리뷰 생성 성공")
     void createReview_success() {
-        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        User user = userDetails.getUser();
 
         Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
@@ -71,9 +58,9 @@ class ReviewServiceTest {
     @Test
     @DisplayName("리뷰 단건 검색 성공")
     void getReviewDetails_success() {
-        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        User user = userDetails.getUser();
 
         Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
@@ -100,9 +87,9 @@ class ReviewServiceTest {
     @Test
     @DisplayName("상점 리뷰 전체 검색 성공")
     void getStoreReview_success() {
-        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        User user = userDetails.getUser();
 
         Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
@@ -128,9 +115,9 @@ class ReviewServiceTest {
     @Test
     @DisplayName("리뷰 수정 성공")
     void updateReview_success() {
-        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        User user = userDetails.getUser();
 
         Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);
@@ -159,9 +146,9 @@ class ReviewServiceTest {
     @Test
     @DisplayName("리뷰 삭제 성공")
     void deleteReview_success() {
-        User user = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(user);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        User user = userDetails.getUser();
 
         Store dummyStore = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
         dummyStore = storeRepository.save(dummyStore);

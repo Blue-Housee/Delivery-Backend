@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IntegrationTestBase {
+
     @Autowired
     protected UserFixtureGenerator userFixtureGenerator;
 
