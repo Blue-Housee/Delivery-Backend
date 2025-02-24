@@ -31,10 +31,10 @@ public class Menu extends BaseEntity {
     private String description;
 
     @Column(name = "public_status")
-    private boolean public_status;
+    private boolean publicStatus;
 
     @Column(name = "menu_image")
-    private String menu_image;
+    private String menuImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
@@ -44,12 +44,12 @@ public class Menu extends BaseEntity {
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
 
-    private Menu(String name, Long price, String description, boolean public_status, String menu_image, Store store) {
+    private Menu(String name, Long price, String description, boolean publicStatus, String menuImage, Store store) {
         this.name = name;
         this.price = price;
         this.description = description;
-        this.public_status = public_status;
-        this.menu_image = menu_image;
+        this.publicStatus = publicStatus;
+        this.menuImage = menuImage;
         this.store = store;
     }
 
@@ -68,13 +68,13 @@ public class Menu extends BaseEntity {
         if (requestDto.getName() != null) menu.name = requestDto.getName();
         if (requestDto.getPrice() != null) menu.price = requestDto.getPrice();
         if (requestDto.getDescription() != null) menu.description = requestDto.getDescription();
-        if (requestDto.getPublicStatus() != null) menu.public_status = requestDto.getPublicStatus();
-        if (requestDto.getMenuImage() != null) menu.menu_image = requestDto.getMenuImage();
+        if (requestDto.getPublicStatus() != null) menu.publicStatus = requestDto.getPublicStatus();
+        if (requestDto.getMenuImage() != null) menu.menuImage = requestDto.getMenuImage();
     }
 
     public void delete(String deletedBy) {
         super.delete(deletedBy);
-        this.public_status = false;
+        this.publicStatus = false;
     }
 
 

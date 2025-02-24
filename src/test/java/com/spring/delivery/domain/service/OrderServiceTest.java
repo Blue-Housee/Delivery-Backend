@@ -203,11 +203,4 @@ class OrderServiceTest {
 
     }
 
-    public UserDetails getUserDetails() {
-        return userDetails;
-    }
-
-    public void setUserDetails(UserDetailsImpl userDetails) {
-        this.userDetails = userDetails;
-    }
 }
