@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
 class UserServiceTest {
 
@@ -48,7 +47,6 @@ class UserServiceTest {
 
     @Nested
     @DisplayName("회원가입")
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class SignUp {
         @Test
         @DisplayName("일반 회원가입 성공")

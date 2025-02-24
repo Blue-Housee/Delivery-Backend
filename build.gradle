@@ -36,6 +36,9 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.0'
 
+    // swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
     // gemini
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
@@ -60,14 +63,13 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'com.h2database:h2'
 
-    // QueryDSL 관련 의존성 추가
+        // QueryDSL 관련 의존성 추가
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}:jakarta"
 
 }
-
 //sourceSets {
 //    main {
 //        java {
@@ -76,7 +78,8 @@ dependencies {
 //    }
 //}
 
-def querydslSrcDir='src/main/generated'
+// QueryDsl
+def querydslSrcDir = 'src/main/generated'
 
 clean {
     delete file(querydslSrcDir)
@@ -85,7 +88,13 @@ clean {
 tasks.withType(JavaCompile) {
     options.generatedSourceOutputDirectory = file(querydslSrcDir)
 }
-
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:deprecation"
+}
+
+
+//순서 걷어 내기
