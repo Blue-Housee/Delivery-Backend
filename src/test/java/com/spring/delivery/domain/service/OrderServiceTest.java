@@ -38,16 +38,6 @@ class OrderServiceTest {
     private ObjectMapper objectMapper;
 
     private static final Logger log = LoggerFactory.getLogger(OrderServiceTest.class);
-<<<<<<< HEAD
-    private User user;
-    private UserDetailsImpl userDetails;
-
-    private Store store;
-    private Menu menu;
-
-    private Order order;
-=======
->>>>>>> d032803189e600216e1c19b59afe486c0565004c
 
     @Autowired
     private OrderService orderService;
