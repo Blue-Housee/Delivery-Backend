@@ -3,7 +3,7 @@ package com.spring.delivery.domain.service;
 import com.spring.delivery.domain.controller.dto.user.*;
 import com.spring.delivery.domain.domain.entity.User;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
-import com.spring.delivery.domain.domain.repository.UserRepository;
+import com.spring.delivery.domain.domain.repository.*;
 import com.spring.delivery.global.security.UserDetailsImpl;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Transactional
 class UserServiceTest {
 
     @Autowired
@@ -40,46 +40,19 @@ class UserServiceTest {
     private static String UPDATED_PASSWORD = "update1234";
     private static String UPDATED_EMAIL = "updated@test.com";
 
-    private User customer;
-    private User manager;
-    private User master;
-
-    private UserDetailsImpl customerUserDetails;
-    private UserDetailsImpl managerUserDetails;
-    private UserDetailsImpl masterUserDetails;
-
-    @BeforeAll
-    void setUp() {
-        // 공동 테스트 데이터 초기화
-        customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
-        manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
-        master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
-
-        customerUserDetails = new UserDetailsImpl(customer);
-        managerUserDetails = new UserDetailsImpl(manager);
-        masterUserDetails = new UserDetailsImpl(master);
-    }
-
     @BeforeEach
     void clearSecurityContext() {
         SecurityContextHolder.clearContext();  // 테스트 시작 전에 SecurityContext 초기화
     }
 
-    //-- 회원가입 --
     @Nested
     @DisplayName("회원가입")
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class SignUp {
-        @BeforeAll
-        void init() {
-            userRepository.deleteAll();  // 기존 데이터 초기화
-        }
-
         @Test
         @DisplayName("일반 회원가입 성공")
-        @Transactional
         void signUp_customer_success() {
             //given
+            User customer = User.createUser("customer1", "customer1@test.com", PASSWORD, Role.CUSTOMER);
             SignUpRequestDto requestDto = createSignUpRequest(customer, Role.CUSTOMER, null);
 
             //when
@@ -94,9 +67,9 @@ class UserServiceTest {
 
         @Test
         @DisplayName("관리자 회원가입 성공")
-        @Transactional
         void signUp_manager_success() {
             //given
+            User manager = User.createUser("manager1", "manager1@test.com", PASSWORD, Role.MANAGER);
             SignUpRequestDto requestDto = createSignUpRequest(manager, Role.MANAGER, ADMIN_TOKEN);
             //when
             SignUpResponseDto savedUser = userService.signup(requestDto);
@@ -108,9 +81,9 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원가입 실패 - 관리자 암호 불일치")
-        @Transactional
         void signUp_manager_fail() {
             //given
+            User manager = User.createUser("manager1", "manager1@test.com", PASSWORD, Role.MANAGER);
             SignUpRequestDto requestDto = createSignUpRequest(manager, Role.MANAGER, "");
 
             //when - then
@@ -122,9 +95,10 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원가입 실패 - 중복된 username")
-        @Transactional
         void signUp_fail_duplicated_username() {
             //given
+            User customer = User.createUser("customer1", "customer1@test.com", PASSWORD, Role.CUSTOMER);
+            User manager = User.createUser("manager1", "manager1@test.com", PASSWORD, Role.MANAGER);
             SignUpRequestDto firstRequestDto = createSignUpRequest(customer, Role.CUSTOMER, null);
 
             SignUpRequestDto secondRequestDto = SignUpRequestDto.builder()
@@ -147,9 +121,11 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원가입 실패 - 중복된 email")
-        @Transactional
         void signUp_fail_duplicated_email() {
             //given
+            User customer = User.createUser("customer1", "customer1@test.com", PASSWORD, Role.CUSTOMER);
+            User manager = User.createUser("manager1", "manager1@test.com", PASSWORD, Role.MANAGER);
+
             SignUpRequestDto requestDto = createSignUpRequest(customer, Role.CUSTOMER, null);
 
             SignUpRequestDto secondRequestDto = SignUpRequestDto.builder()
@@ -177,56 +153,81 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 단건 조회 성공 - customer 본인")
         void getUser_success_customer() {
-            setUpSecurityContext("customer");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
+            setUpSecurityContext(customerUserDetails);
 
+            //when
             UserDetailsResponseDto user = userService.getUser(customer.getId(), customerUserDetails);
 
+            //then
             assertEquals(user.getUsername(), customer.getUsername());
         }
 
         @Test
         @DisplayName("회원 단건 조회 성공 - manager")
         void getUser_success_manager() {
-            setUpSecurityContext("manager");
+            //given
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
+            setUpSecurityContext(managerUserDetails);
 
+            //when
             UserDetailsResponseDto user = userService.getUser(manager.getId(), managerUserDetails);
 
+            //then
             assertEquals(user.getUsername(), manager.getUsername());
         }
 
         @Test
         @DisplayName("회원 단건 조회 성공 - master")
         void getUser_success_master() {
-            setUpSecurityContext("master");
+            //given
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when
             UserDetailsResponseDto user = userService.getUser(master.getId(), masterUserDetails);
 
+            //then
             assertEquals(user.getUsername(), master.getUsername());
         }
 
         @Test
         @DisplayName("회원 단건 조회 실패 - 본인 제외 customer")
         void getUser_fail_customer() {
-            setUpSecurityContext("customer");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
+            setUpSecurityContext(customerUserDetails);
             User customer2 = createAndSaveUser("customer2", "customer2@test.com", Role.CUSTOMER);
 
+            //when
             AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
                 userService.getUser(customer2.getId(), customerUserDetails);
             });
 
+            //then
             assertEquals("Access Denied", exception.getMessage());
         }
 
         @Test
         @DisplayName("회원 단건 조회 실패 - 존재하지 않는 id")
         void getUser_fail_not_found_id() {
+            //given
             Long userId = 100L;
-            setUpSecurityContext("manager");
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
+            setUpSecurityContext(managerUserDetails);
 
+            //when
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
                 userService.getUser(userId, managerUserDetails);
             });
 
+            //then
             assertEquals("존재하지 않는 사용자입니다.", exception.getMessage());
         }
     }
@@ -236,41 +237,54 @@ class UserServiceTest {
     class Update {
         @Test
         @DisplayName("회원 변경 성공 - 본인, 이메일 변경")
-        @Transactional
         void updateUser_success_customer_self_email() {
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(customer.getUsername())
                     .email(UPDATED_EMAIL)
                     .build();
 
-            setUpSecurityContext("customer");
+            setUpSecurityContext(customerUserDetails);
 
+            //when
             UserDetailsResponseDto updatedUser = userService.updateUser(customer.getId(), requestDto, customerUserDetails);
 
+            //then
             assertEquals(UPDATED_EMAIL, updatedUser.getEmail());
         }
 
         @Test
         @DisplayName("회원 변경 성공 - MANAGER -> CUSTOMER 비밀번호 변경")
-        @Transactional
         void updateUser_success_mc_password() {
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(customer.getUsername())
                     .newPassword(UPDATED_PASSWORD)
                     .originPassword(PASSWORD)
                     .build();
 
-            setUpSecurityContext("manager");
+            setUpSecurityContext(managerUserDetails);
 
+            //when
             UserDetailsResponseDto updatedUser = userService.updateUser(customer.getId(), requestDto, managerUserDetails);
 
+            //then
             assertEquals(customer.getId(), updatedUser.getUserId());
         }
 
         @Test
         @DisplayName("회원 변경 성공 - MASTER -> MANAGER 모든 정보 변경")
-        @Transactional
         void updateUser_success_mm_all() {
+            //given
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(manager.getUsername())
                     .email(UPDATED_EMAIL)
@@ -278,18 +292,23 @@ class UserServiceTest {
                     .originPassword(PASSWORD)
                     .build();
 
-            setUpSecurityContext("master");
+            setUpSecurityContext(masterUserDetails);
 
+            //when
             UserDetailsResponseDto updatedUser = userService.updateUser(manager.getId(), requestDto, managerUserDetails);
 
+            //then
             assertEquals(UPDATED_EMAIL, updatedUser.getEmail());
             assertEquals(manager.getId(), updatedUser.getUserId());
         }
 
         @Test
         @DisplayName("회원 변경 실패 - MANAGER -> MASTER (상위 권한자) 정보 변경 시도")
-        @Transactional
         void updateUser_fail_update_upper_lever_user() {
+            //given
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(master.getUsername())
                     .email(UPDATED_EMAIL)
@@ -297,8 +316,9 @@ class UserServiceTest {
                     .originPassword(PASSWORD)
                     .build();
 
-            setUpSecurityContext("manager");
+            setUpSecurityContext(managerUserDetails);
 
+            //when -then
             AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
                 userService.updateUser(master.getId(), requestDto, managerUserDetails);
             });
@@ -308,8 +328,10 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 변경 실패 - 기존 비밀번호 매칭 실패")
-        @Transactional
         void updateUser_fail_password_does_not_match() {
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(customer.getUsername())
                     .email(UPDATED_EMAIL)
@@ -317,8 +339,9 @@ class UserServiceTest {
                     .originPassword(UPDATED_PASSWORD)
                     .build();
 
-            setUpSecurityContext("customer");
+            setUpSecurityContext(customerUserDetails);
 
+            //when -then
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
                 userService.updateUser(customer.getId(), requestDto, customerUserDetails);
             });
@@ -328,17 +351,20 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 변경 실패 - 본인 제외 customer")
-        @Transactional
         void updateUser_fail_customer() {
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(customer.getUsername())
                     .email(UPDATED_EMAIL)
                     .newPassword(UPDATED_PASSWORD)
                     .originPassword(PASSWORD)
                     .build();
-            setUpSecurityContext("customer");
+            setUpSecurityContext(customerUserDetails);
             User customer2 = createAndSaveUser("customer2", "customer2@test.com", Role.CUSTOMER);
 
+            //when - then
             AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
                 userService.updateUser(customer2.getId(), requestDto, customerUserDetails);
             });
@@ -348,8 +374,12 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 변경 실패 - 존재하지 않는 id")
-        @Transactional
         void updateUser_fail_not_found_id() {
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
             UserUpdateRequestDto requestDto = UserUpdateRequestDto.builder()
                     .username(customer.getUsername())
                     .email(UPDATED_EMAIL)
@@ -358,8 +388,9 @@ class UserServiceTest {
                     .build();
 
             Long userId = 100L;
-            setUpSecurityContext("manager");
+            setUpSecurityContext(managerUserDetails);
 
+            //when - then
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
                 userService.updateUser(userId, requestDto, customerUserDetails);
             });
@@ -373,12 +404,16 @@ class UserServiceTest {
     class Delete {
         @Test
         @DisplayName("회원 삭제 성공 - CUSTOMER 본인")
-        @Transactional
         void deleteUser_success_customer_self() {
-            setUpSecurityContext("customer");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
+            setUpSecurityContext(customerUserDetails);
 
+            //when
             UserDeleteResponseDto deletedUser = userService.deleteUser(customer.getId(), customerUserDetails);
 
+            //then
             assertEquals(deletedUser.getUserId(), customer.getId());
 
             User user = userRepository.findById(deletedUser.getUserId()).orElse(null);
@@ -392,12 +427,17 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 삭제 성공 - MASTER")
-        @Transactional
         void deleteUser_success_master() {
-            setUpSecurityContext("master");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when
             UserDeleteResponseDto deletedUser = userService.deleteUser(customer.getId(), masterUserDetails);
 
+            //then
             assertEquals(deletedUser.getUserId(), customer.getId());
 
             User user = userRepository.findById(deletedUser.getUserId()).orElse(null);
@@ -411,10 +451,14 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 삭제 실패 - MANAGER")
-        @Transactional
         void deleteUser_fail_manager() {
-            setUpSecurityContext("manager");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
+            setUpSecurityContext(managerUserDetails);
 
+            //when - then
             AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
                 userService.deleteUser(customer.getId(), managerUserDetails);
             });
@@ -424,11 +468,14 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 삭제 실패 - 존재하지 않는 id")
-        @Transactional
         void deleteUser_fail_id_does_not_found() {
+            //given
             Long userId = 100L;
-            setUpSecurityContext("master");
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when - then
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
                 userService.deleteUser(userId, masterUserDetails);
             });
@@ -438,10 +485,14 @@ class UserServiceTest {
 
         @Test
         @DisplayName("회원 삭제 실패 - 삭제된 id")
-        @Transactional
         void deleteUser_fail_id_deleted_in_advance() {
-            setUpSecurityContext("master");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when - then
             userService.deleteUser(customer.getId(), masterUserDetails);
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
                 userService.deleteUser(customer.getId(), masterUserDetails);
@@ -457,10 +508,16 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 성공 - MANAGER")
         void searchUsers_success_manager() {
-            setUpSecurityContext("manager");
+            //given
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            UserDetailsImpl managerUserDetails = new UserDetailsImpl(manager);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            setUpSecurityContext(managerUserDetails);
 
+            //when
             UserPageResponseDto userList = userService.searchUsers(managerUserDetails, 0, 5, "createdAt", "DESC", "ma");
 
+            //then
             assertEquals(master.getUsername(), userList.getUsers().get(0).getUsername());
             assertEquals(manager.getUsername(), userList.getUsers().get(1).getUsername());
         }
@@ -468,10 +525,16 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 성공 - MASTER")
         void searchUsers_success_master() {
-            setUpSecurityContext("master");
+            //given
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when
             UserPageResponseDto userList = userService.searchUsers(masterUserDetails, 0, 5, "createdAt", "DESC", "ma");
 
+            //then
             assertEquals(master.getUsername(), userList.getUsers().get(0).getUsername());
             assertEquals(manager.getUsername(), userList.getUsers().get(1).getUsername());
         }
@@ -479,10 +542,16 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 성공 - 정렬 ASC로")
         void searchUsers_success_orderby_createdAt_sort_asc() {
-            setUpSecurityContext("master");
+            //given
+            User manager = createAndSaveUser("manager1", "manager1@test.com", Role.MANAGER);
+            User master = createAndSaveUser("master1", "master1@test.com", Role.MASTER);
+            UserDetailsImpl masterUserDetails = new UserDetailsImpl(master);
+            setUpSecurityContext(masterUserDetails);
 
+            //when
             UserPageResponseDto userList = userService.searchUsers(masterUserDetails, 0, 5, "createdAt", "ASC", "ma");
 
+            //then
             assertEquals(manager.getUsername(), userList.getUsers().get(0).getUsername());
             assertEquals(master.getUsername(), userList.getUsers().get(1).getUsername());
         }
@@ -490,8 +559,12 @@ class UserServiceTest {
         @Test
         @DisplayName("회원 검색 실패 - CUSTOMER")
         void searchUsers_success_customer() {
-            setUpSecurityContext("customer");
+            //given
+            User customer = createAndSaveUser("customer1", "customer1@test.com", Role.CUSTOMER);
+            UserDetailsImpl customerUserDetails = new UserDetailsImpl(customer);
+            setUpSecurityContext(customerUserDetails);
 
+            //when - then
             AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
                 UserPageResponseDto userList = userService.searchUsers(customerUserDetails, 0, 5, "createdAt", "ASC", "ma");
             });
@@ -517,20 +590,10 @@ class UserServiceTest {
                 .build();
     }
 
-    void setUpSecurityContext(String userType) {
-        if (userType.equals("customer")) {
+    void setUpSecurityContext(UserDetailsImpl userDetails) {
             SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(customerUserDetails, null, customerUserDetails.getAuthorities())
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
             );
-        } else if (userType.equals("manager")) {
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(managerUserDetails, null, managerUserDetails.getAuthorities())
-            );
-        } else {
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(masterUserDetails, null, masterUserDetails.getAuthorities())
-            );
-        }
     }
 
 }
