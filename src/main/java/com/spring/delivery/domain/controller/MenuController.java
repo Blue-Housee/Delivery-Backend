@@ -25,13 +25,6 @@ public class MenuController {
 
     private final MenuService menuService;
 
-    @GetMapping("test1")
-    public ResponseEntity<String> checkApi(Authentication authentication) {
-        System.out.println("메뉴 API 테스트 엔드포인트 실행됨!");
-        System.out.println("현재 사용자 권한: " + authentication.getAuthorities());
-        return ResponseEntity.ok("메뉴 API가 정상 작동 중입니다.");
-    }
-
     @PostMapping
     public ResponseEntity<ApiResponseDto<MenuResponseDto>> createMenu(
             @RequestBody MenuRequestDto requestDto,
@@ -70,10 +63,10 @@ public class MenuController {
     // 메뉴 단건(상세) 조회
     @GetMapping("/{menuId}")
     public ResponseEntity<ApiResponseDto<MenuResponseDto>> getMenuDetail(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable UUID menuId
     ) {
-
-        ApiResponseDto<MenuResponseDto> responseDto = menuService.getMenuDetail(menuId);
+        ApiResponseDto<MenuResponseDto> responseDto = menuService.getMenuDetail(userDetails, menuId);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
@@ -81,14 +74,31 @@ public class MenuController {
     // 모든 메뉴 리스트
     @GetMapping
     public ResponseEntity<ApiResponseDto<Map<String, Object>>> getMenus(
-            @RequestParam UUID store_id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) UUID store_id,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "30") int size,
             @RequestParam(defaultValue = "createdAt") String sort,
             @RequestParam(defaultValue = "desc") String order
     ) {
 
-        ApiResponseDto<Map<String, Object>> responseDto = menuService.getMenusByStore(store_id, page, size, sort, order);
+        ApiResponseDto<Map<String, Object>> responseDto = menuService.getMenusByStore(userDetails, store_id, page, size, sort, order);
+
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
+    /* 검색 */
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponseDto<Map<String, Object>>> searchMenus(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) UUID storeId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "30") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "desc") String order) {
+
+        ApiResponseDto<Map<String, Object>> responseDto = menuService.searchMenus(userDetails, storeId, keyword, page, size, sort, order);
 
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
