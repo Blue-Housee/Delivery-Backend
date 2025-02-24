@@ -1,10 +1,7 @@
 package com.spring.delivery.domain.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -29,6 +26,7 @@ public class MenuOrder extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Builder
     private MenuOrder(Order order, Menu menu, Long amount) {
         this.amount = amount;
         this.menu = menu;

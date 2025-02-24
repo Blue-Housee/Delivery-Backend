@@ -2,14 +2,12 @@ package com.spring.delivery.domain.domain.entity;
 
 import com.spring.delivery.domain.controller.dto.order.OrderRequestDto;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -37,6 +35,7 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order")
     private List<MenuOrder> menuOrderList = new ArrayList<>();
 
+    @Builder
     private Order(User userId, String address ,String orderType, Long totalPrice) {
         this.user = userId;
         this.address = address;
@@ -50,7 +49,7 @@ public class Order extends BaseEntity {
                 orderRequestDto.getOrderType(),
                 orderRequestDto.getAddress(),
                 orderRequestDto.getTotalPrice()
-        );
+                );
     }
 
     public static void update(Order order, OrderRequestDto orderRequestDto) {
