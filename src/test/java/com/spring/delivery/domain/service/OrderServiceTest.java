@@ -34,11 +34,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OrderServiceTest {
-
     @Autowired
     private ObjectMapper objectMapper;
 
     private static final Logger log = LoggerFactory.getLogger(OrderServiceTest.class);
+<<<<<<< HEAD
     private User user;
     private UserDetailsImpl userDetails;
 
@@ -46,6 +46,8 @@ class OrderServiceTest {
     private Menu menu;
 
     private Order order;
+=======
+>>>>>>> d032803189e600216e1c19b59afe486c0565004c
 
     @Autowired
     private OrderService orderService;
@@ -54,38 +56,16 @@ class OrderServiceTest {
     private UserRepository userRepository;
 
     @Autowired
-    private StoreRepository storeRepository;
-    @Autowired
     private OrderRepository orderRepository;
 
-    @BeforeAll
-    void setUp() {
-        // 테스트용 master 계정 생성
-        userRepository.deleteAll();
-        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
-        user = userRepository.save(testUser);
-        userDetails = new UserDetailsImpl(user);
-
-        // 주문 테스트용 더미 가게
-        store = Store.of("testStore", "test","010-1234-1234",true, LocalTime.now(),LocalTime.now(), user);
-        store = storeRepository.save(store);
-        UUID storeId = store.getId();
-
-        // 주문 테스트용 더미 메뉴
-        MenuRequestDto menuRequestDto = new MenuRequestDto();
-        menuRequestDto.setStoreId(storeId);
-        menuRequestDto.setDescription("testDescription");
-        menuRequestDto.setName("testName");
-        menuRequestDto.setPrice(15000L);
-        menuRequestDto.setPublicStatus(true);
-        menu = Menu.of(menuRequestDto, store);
-    }
-
     @Test
-    @org.junit.jupiter.api.Order(1)
     @DisplayName("주문 생성 성공")
     @Transactional
      void createOrder() {
+        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
+        User user = userRepository.save(testUser);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
         // given
         // orderRequestDto 생성
         OrderRequestDto orderRequestDto = new OrderRequestDto();
@@ -112,10 +92,13 @@ class OrderServiceTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Order(2)
     @DisplayName("주문 수정 성공")
     @Transactional
     void updateOrder() {
+        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
+        User user = userRepository.save(testUser);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
         Order order = Order.builder()
                 .userId(user)
                 .address("testAddress")
@@ -143,10 +126,15 @@ class OrderServiceTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Order(3)
     @DisplayName("주문 삭제 성공")
     @Transactional
     void deleteOrder() {
+        // 테스트용 master 계정 생성
+        userRepository.deleteAll();
+        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
+        User user = userRepository.save(testUser);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
         Order order = Order.builder()
                 .userId(user)
                 .address("testAddress")
@@ -160,10 +148,12 @@ class OrderServiceTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Order(4)
     @DisplayName("주문 조회 성공")
     @Transactional
     void getOrder() {
+        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
+        User user = userRepository.save(testUser);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
         Order order = Order.builder()
                 .userId(user)
                 .address("testAddress")
@@ -182,10 +172,13 @@ class OrderServiceTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Order(5)
     @DisplayName("주문리스트 조회 성공")
     @Transactional
     void getOrders() {
+        User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
+        User user = userRepository.save(testUser);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
         for (int i=0; i<5; i++) {
             Order order = Order.builder()
                     .userId(user)
@@ -199,7 +192,5 @@ class OrderServiceTest {
         ApiResponseDto<List<OrderMenuResponseDto>> orders = orderService.getOrders(user.getId(), "testOrderType", "createdAt", "desc", 1, 3, userDetails);
 
         assertNotNull(orders);
-
     }
-
 }

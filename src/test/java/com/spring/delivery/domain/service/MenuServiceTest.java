@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MenuServiceTest {
 
     @Autowired
@@ -53,6 +53,7 @@ class MenuServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // 테스트용 유저 생성
         ownerUser = userRepository.findByEmail("owner2@email.com")
                 .orElseGet(() -> {
