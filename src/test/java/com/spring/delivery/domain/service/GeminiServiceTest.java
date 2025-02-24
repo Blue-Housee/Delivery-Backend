@@ -22,6 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -49,14 +49,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_METHOD) // 각 테스트마다 새 인스턴스 생성
 @ExtendWith(MockitoExtension.class)
-@ActiveProfiles("test")
 class GeminiServiceTest {
-
-    private static final Logger log = LoggerFactory.getLogger(GeminiServiceTest.class);
-
 
     @Mock
     private WebClient webClient; // Gemini API 호출 Mocking
@@ -74,8 +70,9 @@ class GeminiServiceTest {
     @InjectMocks
     private GeminiService geminiService;
 
-    @BeforeEach
-    protected void setUpCommon() {
+    @Test
+    @DisplayName("추천 응답 저장 성공")
+    void testSaveAiSuggestion_Success() {
         // 모든 목 객체 초기화
         //Mockito.reset(webClient, storeRepository, geminiRepository, userDetails);
         Mockito.clearInvocations(webClient, storeRepository, geminiRepository, userDetails);
@@ -84,12 +81,6 @@ class GeminiServiceTest {
 
         ReflectionTestUtils.setField(geminiService, "geminiApiUrl", "https://dummyApi.com/");
         ReflectionTestUtils.setField(geminiService, "geminiApiKey", "dummyKey");
-    }
-
-
-    @Test
-    @DisplayName("추천 응답 저장 성공")
-    void testSaveAiSuggestion_Success() {
         // given
         Set<GrantedAuthority> authorities = Set.of(new SimpleGrantedAuthority("ROLE_MASTER"));
         doReturn(authorities).when(userDetails).getAuthorities();
@@ -138,6 +129,14 @@ class GeminiServiceTest {
     @Test
     @DisplayName("권한 부족 403")
     void testSaveAiSuggestion_Forbidden() {
+        // 모든 목 객체 초기화
+        //Mockito.reset(webClient, storeRepository, geminiRepository, userDetails);
+        Mockito.clearInvocations(webClient, storeRepository, geminiRepository, userDetails);
+        // WebClient 필드를 목 객체로 강제 주입
+        ReflectionTestUtils.setField(geminiService, "webClient", webClient);
+
+        ReflectionTestUtils.setField(geminiService, "geminiApiUrl", "https://dummyApi.com/");
+        ReflectionTestUtils.setField(geminiService, "geminiApiKey", "dummyKey");
         // given
         // 기존 셋업에서 owner로 고정되어 있어 덮어쓰기가 필요
         Set<GrantedAuthority> authorities = Set.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
@@ -155,6 +154,14 @@ class GeminiServiceTest {
     @Test
     @DisplayName("gemini api 응답 지연 - 504")
     void testSaveAiSuggestion_GeminiTimeout() {
+        // 모든 목 객체 초기화
+        //Mockito.reset(webClient, storeRepository, geminiRepository, userDetails);
+        Mockito.clearInvocations(webClient, storeRepository, geminiRepository, userDetails);
+        // WebClient 필드를 목 객체로 강제 주입
+        ReflectionTestUtils.setField(geminiService, "webClient", webClient);
+
+        ReflectionTestUtils.setField(geminiService, "geminiApiUrl", "https://dummyApi.com/");
+        ReflectionTestUtils.setField(geminiService, "geminiApiKey", "dummyKey");
         // given
         // 기존 셋업에서 owner로 고정되어 있어 덮어쓰기가 필요
         Set<GrantedAuthority> authorities = Set.of(new SimpleGrantedAuthority("ROLE_OWNER"));
