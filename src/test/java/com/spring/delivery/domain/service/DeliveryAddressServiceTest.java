@@ -1,71 +1,38 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressMessageRequestDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressRequestDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressResponseDto;
 import com.spring.delivery.domain.controller.dto.DeliveryAddress.DeliveryAddressUpdateRequestDto;
 import com.spring.delivery.domain.domain.entity.DeliveryAddress;
 import com.spring.delivery.domain.domain.entity.User;
-import com.spring.delivery.domain.domain.entity.enumtype.Role;
 import com.spring.delivery.domain.domain.repository.DeliveryAddressRepository;
-import com.spring.delivery.domain.domain.repository.UserRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import static com.spring.delivery.domain.fixture.DeliveryAddressFixtureGenerator.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test") // 테스트 전용 프로파일 적용
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class DeliveryAddressServiceTest {
-    private static final String ADDRESS = "345 Test Street";
-    private static final String REQUEST = "Leave at door";
-    private static final String UPDATE_ADDRESS = "123 Test Street";
-
-    private static final String CREATE_SUCCESS_MESSAGE = "배송지가 생성되었습니다";
-    private static final String UPDATE_SUCCESS_MESSAGE = "배송지가 수정되었습니다.";
-    private static final String ALREADY_DELETE_DATA_MESSAGE = "삭제된 데이터입니다";
-    private static final String ALREADY_DATA_MESSAGE = "이미 존재하는 배송지입니다.";
-    private static final String MAXIMUM_DATA_MESSAGE = "최대 배송지는 3개입니다.";
-    private static final String SAME_DATA_MESSAGE = "수정할 배송지와 기존 배송지가 같습니다.";
-    private static final String NO_DATA_MESSAGE = "해당되는 배송지가 없습니다.";
-
+class DeliveryAddressServiceTest extends IntegrationTestBase {
     @Autowired
     private DeliveryAddressService deliveryAddressService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private DeliveryAddressRepository deliveryAddressRepository;
 
-    private User user;
-    private UserDetailsImpl userDetails;
-
-    @BeforeAll
-    void setUp() {
-        // 테스트 데이터 초기화 (테스트용 유저 생성)
-        userRepository.deleteAll(); // 다른 테스트 간의 간섭을 막기 위해 초기화
-        User testUser = User.createUser("testUser", "test@example.com", "password", Role.CUSTOMER);
-        user = userRepository.save(testUser);
-        // 필요한 다른 필드도 설정합니다.
-        userDetails = new UserDetailsImpl(user);
-    }
-
     @Test
-    @Order(1)
     @DisplayName("배송지 생성 성공")
-    @Transactional
     void createDeliveryAddress_success() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
 
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto requestDto = createDto(ADDRESS, REQUEST);
 
         DeliveryAddressMessageRequestDto responseDto =
@@ -76,11 +43,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(2)
     @DisplayName("배송지 중복 생성 실패")
-    @Transactional
     void createDeliveryAddress_failure_duplicate() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
 
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto requestDto = createDto(ADDRESS, REQUEST);
 
         // 첫 번째 생성은 성공
@@ -94,10 +62,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(3)
     @DisplayName("배송지 최대 개수 초과 실패")
-    @Transactional
     void createDeliveryAddress_failure_maximumNumber() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
+
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto dto1 = createDto("345 Test Street", "Leave at door");
         DeliveryAddressRequestDto dto2 = createDto("3456 Test Street", "Leave at door");
         DeliveryAddressRequestDto dto3 = createDto("3457 Test Street", "Leave at door");
@@ -114,10 +84,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(4)
     @DisplayName("배송지 수정 성공")
-    @Transactional
     void updateDeliveryAddress_success() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
+
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
@@ -140,10 +112,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(5)
     @DisplayName("기존 배송지와 수정할 배송지 같을 경우 실패")
-    @Transactional
     void updateDeliveryAddress_failure_duplicate() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
+
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
@@ -166,10 +140,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(6)
     @DisplayName("배송지 검색")
-    @Transactional
     void selectDeliveryAddress_success() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
+
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
@@ -189,10 +165,11 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(7)
     @DisplayName("해당되는 배송지가 없을 경우 실패")
-    @Transactional
     void selectDeliveryAddress_failure_notFound() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+
+        // 필요한 다른 필드도 설정합니다.
 
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
@@ -213,11 +190,12 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(8)
     @DisplayName("이미 삭제된 데이터를 검색할 경우 에러")
-    @Transactional
     void selectDeliveryAddress_failure_deleteData() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
 
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
@@ -238,11 +216,13 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @Order(9)
     @DisplayName("배송지 삭제 성공")
     @Transactional
     void deleteDeliveryAddress_success() {
+        UserDetailsImpl userDetails = userFixtureGenerator.createdPrincipalFixture();
+        User user = userDetails.getUser();
 
+        // 필요한 다른 필드도 설정합니다.
         DeliveryAddressRequestDto createDto = createDto(ADDRESS, REQUEST);
 
         // 생성 테스트
@@ -255,17 +235,10 @@ class DeliveryAddressServiceTest {
 
         deliveryAddressService.deleteDeliveryAddress(deliveryAddress.getId(), userDetails);
 
+        System.out.println("delivery : " + deliveryAddress.getDeletedBy());
+        System.out.println("userDetailss : " + userDetails.getUser().getUsername());
+
         assertNotNull(deliveryAddress);
         assertEquals(user.getUsername(), deliveryAddress.getDeletedBy());
-
-    }
-
-
-    // 공통적으로 사용되는 DTO 생성 헬퍼 메소드
-    private DeliveryAddressRequestDto createDto(String address, String request) {
-        DeliveryAddressRequestDto dto = new DeliveryAddressRequestDto();
-        dto.setAddress(address);
-        dto.setRequest(request);
-        return dto;
     }
 }

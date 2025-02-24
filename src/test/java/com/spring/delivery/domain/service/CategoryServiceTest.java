@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CategoryServiceTest {
 
     @Autowired
@@ -54,7 +53,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(1)
     @DisplayName("카테고리 생성 - 권한 있음")
     @Transactional
     void testCreateCategorySuccess() {
@@ -74,7 +72,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(2)
     @DisplayName("카테고리 생성 - 권한 없음")
     @Transactional
     void testCreateCategoryFailDueToInsufficientPermissions() {
@@ -90,7 +87,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(3)
     @DisplayName("카테고리 조회 - 전체 목록")
     @Transactional
     void testGetAllCategories() {
@@ -111,7 +107,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(4)
     @DisplayName("카테고리 수정 - 권한 있음")
     @Transactional
     void testUpdateCategorySuccess() {
@@ -137,7 +132,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(5)
     @DisplayName("카테고리 수정 - 권한 없음")
     @Transactional
     void testUpdateCategoryFailDueToInsufficientPermissions() {
@@ -160,7 +154,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(6)
     @DisplayName("카테고리 삭제 - 권한 있음")
     @Transactional
     void testDeleteCategorySuccess() {
@@ -187,7 +180,6 @@ class CategoryServiceTest {
     }
 
     @Test
-    @Order(7)
     @DisplayName("카테고리 삭제 - 권한 없음")
     @Transactional
     void testDeleteCategoryFailDueToInsufficientPermissions() {

@@ -49,6 +49,7 @@ class UserServiceTest {
     @Nested
     @DisplayName("회원가입")
     class SignUp {
+
         @Test
         @DisplayName("일반 회원가입 성공")
         void signUp_customer_success() {

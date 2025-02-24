@@ -83,7 +83,6 @@ public class ReviewService {
                 .comment(review.getContents())
                 .customer_uuid(review.getUser().getId())
                 .store_id(review.getStore().getId())
-                .customer_id(review.getUser().getUsername())
                 .created_at(review.getCreatedAt())
                 .updated_at(review.getUpdatedAt())
                 .deleted_at(review.getDeletedAt())
