@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryListResponseDto;
 import com.spring.delivery.domain.controller.dto.category.CategoryRequestDto;
@@ -20,10 +21,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CategoryServiceTest {
+
+class CategoryServiceTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;
@@ -33,12 +32,6 @@ class CategoryServiceTest {
 
     @Autowired
     private CategoryService categoryService;
-
-    @BeforeEach
-    void setUp() {
-        categoryRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("카테고리 생성 - 권한 있음")
