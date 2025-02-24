@@ -27,7 +27,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -50,6 +52,7 @@ import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD) // 각 테스트마다 새 인스턴스 생성
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class GeminiServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiServiceTest.class);

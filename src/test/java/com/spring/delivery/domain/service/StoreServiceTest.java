@@ -52,6 +52,14 @@ class StoreServiceTest {
     private Category testCategory;
     private UUID testCategoryId;
 
+    @BeforeAll
+    void beforeAll() {
+
+        storeCategoryRepository.deleteAll();
+        categoryRepository.deleteAll();
+        storeRepository.deleteAll();
+        userRepository.deleteAll();
+    }
     @BeforeEach
     void setUp() {
         // MASTER 권한을 가진 유저 생성
