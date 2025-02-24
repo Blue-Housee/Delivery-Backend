@@ -4,11 +4,13 @@ import com.spring.delivery.domain.domain.entity.Payment;
 import com.spring.delivery.domain.domain.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Setter
 @Getter
 @RequiredArgsConstructor
 public class OrderRequestDto {

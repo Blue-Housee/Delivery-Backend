@@ -87,7 +87,7 @@ public class OrderService {
         Order.update(order, orderRequestDto);
 
         // orderRequestDto 에 updateMenuIds 가 있다면 MenuOrder 수정
-        if (!orderRequestDto.getUpdateMenuIds().isEmpty()) {
+        if (orderRequestDto.getUpdateMenuIds() != null && !orderRequestDto.getUpdateMenuIds().isEmpty()) {
             orderRequestDto.getUpdateMenuIds().forEach(orderMenuId -> {
                 UUID updateKey = orderMenuId.keySet().iterator().next();
                 Long updateValue = orderMenuId.values().iterator().next();
@@ -97,9 +97,10 @@ public class OrderService {
                 MenuOrder.update(updateMenuOrder, updateValue);
             });
         }
+        OrderResponseDto responseDto = new OrderResponseDto(order);
 
         // 수정후 성공 메세지 return
-        return ApiResponseDto.success(null);
+        return ApiResponseDto.success(responseDto);
     }
 
     @Transactional
@@ -123,6 +124,7 @@ public class OrderService {
 
         // 주문이 존재한다면 주문삭제
         order.delete(userDetails.getUser().getUsername());
+
 
         return ApiResponseDto.success(null);
     }

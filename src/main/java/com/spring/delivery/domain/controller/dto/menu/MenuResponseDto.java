@@ -24,6 +24,18 @@ public class MenuResponseDto {
     private String createdBy;
 
 
+    private MenuResponseDto(Menu menu) {
+        this.id = menu.getId();
+        this.name = menu.getName();
+        this.price = menu.getPrice();
+        this.description = menu.getDescription();
+        this.publicStatus = menu.isPublicStatus();
+        this.menuImage = menu.getMenuImage();
+        this.storeId = menu.getStore().getId();
+        this.createdAt = menu.getCreatedAt();
+        this.createdBy = menu.getCreatedBy();
+    }
+
     @Builder
     private MenuResponseDto(UUID id, String name, Long price, String description, Boolean publicStatus, String menuImage, UUID storeId, LocalDateTime createdAt, String createdBy) {
         this.id = id;
@@ -35,6 +47,7 @@ public class MenuResponseDto {
         this.storeId = storeId;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
+
     }
 
     public static MenuResponseDto from(Menu menu) {
@@ -50,5 +63,4 @@ public class MenuResponseDto {
                 .createdBy(menu.getCreatedBy())
                 .build();
     }
-
 }
