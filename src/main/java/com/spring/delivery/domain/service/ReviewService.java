@@ -184,8 +184,10 @@ public class ReviewService {
     }
 
     //상점의 평점 평균 계산
-    public Double selectStoreAverageRating(UUID storeId){
-        Double averageRating = Math.round(reviewRepository.findByStoreAverageRating(storeId ) * 10.0) / 10.0;
-        return averageRating;
+    public Double selectStoreAverageRating(UUID storeId) {
+        Double averageRating = reviewRepository.findByStoreAverageRating(storeId);
+        // null 체크 및 0.0 반환
+        return (averageRating != null) ? Math.round(averageRating * 10.0) / 10.0 : 0.0;
     }
+
 }
