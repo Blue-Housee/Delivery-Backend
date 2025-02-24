@@ -1,6 +1,7 @@
 package com.spring.delivery.domain.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.menu.MenuRequestDto;
 import com.spring.delivery.domain.controller.dto.order.OrderMenuResponseDto;
@@ -9,6 +10,7 @@ import com.spring.delivery.domain.controller.dto.order.OrderResponseDto;
 import com.spring.delivery.domain.domain.entity.*;
 import com.spring.delivery.domain.domain.entity.Order;
 import com.spring.delivery.domain.domain.entity.enumtype.Role;
+import com.spring.delivery.domain.domain.repository.MenuRepository;
 import com.spring.delivery.domain.domain.repository.OrderRepository;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.domain.domain.repository.UserRepository;
@@ -33,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class OrderServiceTest {
+class OrderServiceTest extends IntegrationTestBase {
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -48,13 +50,17 @@ class OrderServiceTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private MenuRepository menuRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+
+
     @Test
     @DisplayName("주문 생성 성공")
-    @Transactional
-     void createOrder() {
+    void createOrder() {
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
         // given
         // orderRequestDto 생성
@@ -64,17 +70,25 @@ class OrderServiceTest {
         orderRequestDto.setOrderType("testOrderType");
         orderRequestDto.setTotalPrice(15000L);
 
+        // 가게
+        Store store = Store.of("testName", "testAddress", "010-1234-1234", true, LocalTime.now(), LocalTime.now(), user);
+        storeRepository.save(store);
+
+        // 메뉴
+        MenuRequestDto menuRequestDto = MenuRequestDto.of("test", 15000L ,"testDescription", "d", true, store.getId());
+        Menu menu = Menu.of(menuRequestDto, store);
+        menuRepository.save(menu);
+
         // 메뉴 리스트
         List<Map<UUID, Long>> menuList= new ArrayList<>();
-        Map<UUID, Long> menu1 = new HashMap<>();
-        menu1.put(UUID.randomUUID(), 100L);
-        menu1.put(UUID.randomUUID(), 200L);
-        menuList.add(menu1);
+        Map<UUID, Long> menuIdMap = new HashMap<>();
+        menuIdMap.put(menu.getId(), menu.getPrice());
+        menuList.add(menuIdMap);
 
         orderRequestDto.setMenuInfo(menuList);
 
         //when - then
-        ApiResponseDto order= orderService.createOrder(orderRequestDto);
+        ApiResponseDto<OrderResponseDto> order= orderService.createOrder(orderRequestDto);
 
         // 객체 생성 확인 => assertNotNull 을 사용해도 되지만 눈으로 확인해보고 싶었음.
         try{log.info("확인: {}", objectMapper.writeValueAsString(order));}
@@ -83,7 +97,6 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 수정 성공")
-    @Transactional
     void updateOrder() {
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
@@ -117,7 +130,6 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 삭제 성공")
-    @Transactional
     void deleteOrder() {
         // 테스트용 master 계정 생성
         userRepository.deleteAll();
@@ -133,17 +145,16 @@ class OrderServiceTest {
                 .build();
         order = orderRepository.save(order);
 
-        ApiResponseDto orderResponse = orderService.deleteOrder(order.getId(), userDetails);
+        ApiResponseDto<OrderResponseDto> orderResponse = orderService.deleteOrder(order.getId(), userDetails);
         assertNotNull(orderResponse);
     }
 
     @Test
     @DisplayName("주문 조회 성공")
-    @Transactional
     void getOrder() {
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
         Order order = Order.builder()
                 .userId(user)
                 .address("testAddress")
@@ -155,7 +166,7 @@ class OrderServiceTest {
         ApiResponseDto<OrderMenuResponseDto> responseDto = orderService.getOrder(order.getId());
 
         assertNotNull(responseDto);
-        assertEquals(user, responseDto.getData().getOrder().getUser());
+        assertEquals(user.getId(), responseDto.getData().getOrder().getUser().getId());
         assertEquals("testAddress", responseDto.getData().getOrder().getAddress());
         assertEquals("testOrderType", responseDto.getData().getOrder().getOrderType());
         assertEquals(15000L, responseDto.getData().getOrder().getTotalPrice());
@@ -163,7 +174,6 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문리스트 조회 성공")
-    @Transactional
     void getOrders() {
         User testUser = User.createUser("MasterUser", "test@test.com", "1234", Role.MASTER);
         User user = userRepository.save(testUser);
