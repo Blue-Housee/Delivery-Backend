@@ -1,5 +1,6 @@
 package com.spring.delivery.domain.service;
 
+import com.spring.delivery.domain.config.IntegrationTestBase;
 import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.controller.dto.store.*;
 import com.spring.delivery.domain.domain.entity.Category;
@@ -24,10 +25,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class StoreServiceTest {
+
+class StoreServiceTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;
@@ -44,14 +43,6 @@ class StoreServiceTest {
     @Autowired
     private StoreService storeService;
 
-    @BeforeEach
-    void setUp() {
-        // 데이터 초기화
-        storeCategoryRepository.deleteAll();
-        categoryRepository.deleteAll();
-        storeRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("가게 등록 - 권한 있음")
