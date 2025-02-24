@@ -7,7 +7,7 @@ import com.spring.delivery.domain.controller.dto.ApiResponseDto;
 import com.spring.delivery.domain.domain.entity.Store;
 import com.spring.delivery.domain.domain.repository.StoreRepository;
 import com.spring.delivery.global.security.UserDetailsImpl;
-import com.spring.delivery.infra.exception.GeminiApiException;
+import com.spring.delivery.infra.exception.GeminiException;
 import com.spring.delivery.infra.exception.GeminiServiceUnavailableException;
 import com.spring.delivery.infra.exception.GeminiTimeoutException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.*;
@@ -56,7 +57,7 @@ public class GeminiService {
         Set<String> allowedRoles = Set.of("ROLE_MASTER", "ROLE_OWNER");
 
         if (!lacksAuthority(userDetails, allowedRoles)) {
-            return ApiResponseDto.fail(403, "열람할 권한이 없습니다.");
+            return ApiResponseDto.fail(403, "생성할 권한이 없습니다.");
         }
 
         // store entity check
@@ -85,8 +86,9 @@ public class GeminiService {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(5)) // 응답시간 5초 초과 시 504 에러 처리
-                    .block();
+                    .timeout(Duration.ofSeconds(5)) // 응답시간 5초 초과 시 에러 처리
+                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
+                    .block(); // api 응답이 올때까지 blocking(동기)
 
             // 응답 데이터 에서 필요한 필드만 추출. api response to Dto and text extraction
             String aiResponseText = extractResponseText(apiResponseJson);
@@ -98,17 +100,25 @@ public class GeminiService {
             return ApiResponseDto.success(GeminiResponseDto.from(gemini));
 
         } catch (WebClientRequestException e) {
-            log.warn("Gemini API 응답 시간 초과: {}", e.getMessage());
-            throw new GeminiTimeoutException("Gemini API 추천 서비스 응답 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.");
+            log.warn("Gemini API 응답 시간 초과 - 요청 URL: {}, 메시지: {}", e.getUri(), e.getMessage());
+            throw new GeminiTimeoutException(
+                    String.format("Gemini API 추천 서비스 응답 시간이 초과되었습니다. [요청 URL: %s, 메시지: %s]",
+                            e.getUri(), e.getMessage())
+            );
         } catch (WebClientResponseException e) {
-            log.warn("Gemini API 요청 실패 - 상태 코드: {}, 메시지: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.warn("Gemini API 요청 실패 - 상태 코드: {}, 요청 URL: {}, 메시지: {}", e.getStatusCode(), Objects.requireNonNull(e.getRequest()).getURI() ,e.getResponseBodyAsString());
+
             if (e.getStatusCode().is5xxServerError()) {
-                throw new GeminiServiceUnavailableException("현재 AI 추천 서비스를 이용할 수 없습니다. ");
+                log.warn("서비스 장애 예외 변환 실행됨"); //  잠시
+                throw new GeminiServiceUnavailableException(
+                        String.format("현재 AI 추천 서비스를 이용할 수 없습니다. [요청 URL: %s, 상태 코드: %s, 메시지: %s]",
+                                e.getRequest().getURI(), e.getStatusCode(), e.getResponseBodyAsString())
+                );
             }
-            throw new GeminiApiException("Gemini AI 추천 서비스 요청 중 오류가 발생했습니다.");
-        } catch (Exception e) {
-            log.error("Gemini API 호출 중 예상치 못한 오류 발생", e);
-            throw new GeminiApiException("AI 추천 서비스 요청 중 오류가 발생했습니다.");
+            throw new GeminiException(
+                    String.format("Gemini AI 추천 서비스 요청 중 오류가 발생했습니다. [요청 URL: %s, 상태 코드: %s, 메시지: %s]",
+                            e.getRequest().getURI(), e.getStatusCode(), e.getResponseBodyAsString())
+                    );
         }
 
     }
@@ -218,7 +228,7 @@ public class GeminiService {
                     .path("text").asText();
         } catch (Exception e) {
             log.error("Gemini API 응답 데이터 파싱 실패", e);
-            throw new GeminiApiException("AI 추천 서비스 응답 데이터 처리 중 오류가 발생했습니다.");
+            throw new GeminiException("AI 추천 서비스 응답 데이터 처리 중 오류가 발생했습니다.");
         }
     }
 
