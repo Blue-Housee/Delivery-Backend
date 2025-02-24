@@ -28,20 +28,19 @@ import java.util.List;
 public class SwaggerConfig {
 
     @Bean
-    public GroupedOpenApi restApi() { //rest controller
+    public GroupedOpenApi restApi(){ //rest controller
 
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/")
+                .pathsToMatch("/api/**")
                 .group("REST API")
                 .build();
     }
-
     @Bean
     public GroupedOpenApi commonApi() { //general controller
 
         return GroupedOpenApi.builder()
-                .pathsToMatch("//")
-                .pathsToExclude("/api/**/") //exclude that begin with '/api'
+                .pathsToMatch("/**/*")
+                .pathsToExclude("/api/**/*") //exclude that begin with '/api'
                 .group("COMMON API")
                 .build();
     }
@@ -61,7 +60,7 @@ public class SwaggerConfig {
                 .info(new Info().title("My REST API")
                         .description("Some custom description of API.")
                         .version("1.0").contact(new Contact().name("Sallo Szrajbman")
-                                .email("www.baeldung.com").url("salloszraj@gmail.com"))
+                                .email( "www.baeldung.com").url("salloszraj@gmail.com"))
                         .license(new License().name("License of API")
                                 .url("API license URL")))
                 .path("/api/user/signIn", new PathItem().post(
