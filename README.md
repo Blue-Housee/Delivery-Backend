@@ -43,6 +43,10 @@ Blue House 배달 서비스는 코드의 가독성과 유지보수성을 높이�
 
 `.env.properties` 파일을 프로젝트 루트 디렉토리에 생성한 후, 아래 정보를 입력합니다.
 
+> ⚠️ **주의:** `.env.properties` 파일에는 보안이 필요한 정보(비밀번호, API 키 등)가 포함되므로, `.gitignore`에 추가하여 Git에 커밋되지 않도록 합니다.
+
+이 파일은 `application.properties`에서 `@PropertySource("classpath:.env.properties")` 등의 설정을 통해 로드됩니다.
+
 ```
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/{DB_NAME}
 SPRING_DATASOURCE_USERNAME={DB_USERNAME}
@@ -65,7 +69,7 @@ gemini.api.key={GEMINI_KEY}
 ### 2.1 Git 저장소 클론
 
 ```sh
-git clone https://github.com/Blue-Housee/Delivery-Backend.git
+git clone https://github.com/Blue-Housee/Delivery-Backend.git
 cd Delivery-Backend
 ```
 
@@ -89,7 +93,7 @@ CREATE DATABASE mydb;
 
 ## 3. API 테스트 방법
 
-- **Swagger UI** 제공: `http://localhost:8080/swagger-ui.html`
+- **Swagger UI** 제공: `http://localhost:8080/swagger-ui/index.html`
 </details>
 
 
